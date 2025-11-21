@@ -58,7 +58,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       );
 
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 7), () {
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -95,16 +95,24 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = AppTheme.themeMode.value;
-    final isDark = themeMode == ThemeMode.dark;
+    final isDark = AppTheme.themeMode.value == ThemeMode.dark;
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // nessuna freccia indietro
-        title: null,
+        automaticallyImplyLeading: false,
         elevation: 0,
+        title: Row(
+          children: [
+            Image.asset(
+              'lib/assets/logo/logo_nobg.png', // 👈
+              height: 50,                       // 👈 più grande
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
         actions: [
           IconButton(
+            iconSize: 32,                       // 👈 icona tema più grande
             icon: Icon(
               isDark ? Icons.wb_sunny_outlined : Icons.dark_mode_outlined,
             ),
@@ -127,7 +135,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   subtitle: 'Registrati per iniziare',
                 ),
                 const SizedBox(height: 32),
-
                 SoftCard(
                   child: _isRegistered
                       ? Column(
@@ -184,7 +191,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           },
                         ),
                         const SizedBox(height: 20),
-
                         SoftInput(
                           controller: _passwordController,
                           label: 'Password',
@@ -213,7 +219,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         const SizedBox(height: 20),
-
                         SoftInput(
                           controller: _confirmController,
                           label: 'Conferma password',
@@ -230,7 +235,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           },
                         ),
                         const SizedBox(height: 20),
-
                         BigButton(
                           text: 'Registrati',
                           isLoading: _isLoading,
@@ -240,9 +244,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

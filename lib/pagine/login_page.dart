@@ -37,7 +37,6 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
 
     try {
-      // 🔥 LOGIN REALE CON FIREBASE
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
@@ -72,16 +71,24 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = AppTheme.themeMode.value;
-    final isDark = themeMode == ThemeMode.dark;
+    final isDark = AppTheme.themeMode.value == ThemeMode.dark;
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // niente freccia
-        title: null,
+        automaticallyImplyLeading: false,
         elevation: 0,
+        title: Row(
+          children: [
+            Image.asset(
+              'lib/assets/logo/logo_nobg.png', // 👈 nuovo logo trasparente
+              height: 50,                       // 👈 dimensione aumentata
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
         actions: [
           IconButton(
+            iconSize: 32,                       // 👈 icona più grande
             icon: Icon(
               isDark ? Icons.wb_sunny_outlined : Icons.dark_mode_outlined,
             ),
@@ -104,7 +111,6 @@ class _LoginPageState extends State<LoginPage> {
                   subtitle: 'Accedi per continuare',
                 ),
                 const SizedBox(height: 32),
-
                 SoftCard(
                   child: Form(
                     key: _formKey,
@@ -126,7 +132,6 @@ class _LoginPageState extends State<LoginPage> {
                           },
                         ),
                         const SizedBox(height: 20),
-
                         SoftInput(
                           controller: _passwordController,
                           label: 'Password',
@@ -155,16 +160,14 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         const SizedBox(height: 12),
-
                         TinyTextButton(
                           text: 'Password dimenticata?',
                           alignment: Alignment.centerRight,
                           onPressed: () {
-                            // TODO: pagina reset password
+                            // TODO
                           },
                         ),
                         const SizedBox(height: 10),
-
                         BigButton(
                           text: 'Accedi',
                           isLoading: _isLoading,
@@ -174,9 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
