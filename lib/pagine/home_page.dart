@@ -13,6 +13,7 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // 👈 niente freccia indietro
         title: const Text('Home'),
         elevation: 0,
         actions: [

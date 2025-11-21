@@ -22,7 +22,10 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.light,
+
+            // 👉 FONT GLOBALE
             fontFamily: 'Poppins',
+
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFFE91E63),
               brightness: Brightness.light,
@@ -38,7 +41,10 @@ class MyApp extends StatelessWidget {
           darkTheme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.dark,
+
+            // 👉 FONT GLOBALE
             fontFamily: 'Poppins',
+
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFFE91E63),
               brightness: Brightness.dark,

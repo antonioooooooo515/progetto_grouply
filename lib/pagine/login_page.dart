@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../theme_modifier.dart';
 import '../widgets/welcome_header.dart';
@@ -34,11 +35,39 @@ class _LoginPageState extends State<LoginPage> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1)); // login finto
-    setState(() => _isLoading = false);
 
-    if (!mounted) return;
-    Navigator.pushReplacementNamed(context, '/home');
+    try {
+      // 🔥 LOGIN REALE CON FIREBASE
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/home');
+    } on FirebaseAuthException catch (e) {
+      String message = 'Errore durante il login';
+
+      if (e.code == 'user-not-found') {
+        message = 'Utente non trovato';
+      } else if (e.code == 'wrong-password') {
+        message = 'Password errata';
+      } else if (e.code == 'invalid-email') {
+        message = 'Email non valida';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Errore imprevisto durante il login')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
