@@ -80,15 +80,15 @@ class _LoginPageState extends State<LoginPage> {
         title: Row(
           children: [
             Image.asset(
-              'lib/assets/logo/logo_nobg.png', // 👈 nuovo logo trasparente
-              height: 50,                       // 👈 dimensione aumentata
+              'lib/assets/logo/logo_nobg.png',
+              height: 50,
             ),
             const SizedBox(width: 8),
           ],
         ),
         actions: [
           IconButton(
-            iconSize: 32,                       // 👈 icona più grande
+            iconSize: 32,
             icon: Icon(
               isDark ? Icons.wb_sunny_outlined : Icons.dark_mode_outlined,
             ),

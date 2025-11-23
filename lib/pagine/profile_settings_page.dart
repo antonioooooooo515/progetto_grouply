@@ -1,0 +1,428 @@
+import 'dart:convert'; // per base64
+
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../widgets/big_button.dart';
+
+class ProfileSettingsPage extends StatefulWidget {
+  const ProfileSettingsPage({super.key});
+
+  @override
+  State<ProfileSettingsPage> createState() => _ProfileSettingsPageState();
+}
+
+class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _dayController = TextEditingController();
+  final TextEditingController _yearController = TextEditingController();
+  final TextEditingController _sportController = TextEditingController();
+  final TextEditingController _roleController = TextEditingController();
+
+  String? _selectedMonth;
+  String? _selectedGender;
+
+  // stringa base64 dell'immagine profilo
+  String? _profileImageBase64;
+
+  bool _isLoading = true;            // carica dati iniziali
+  bool _isSaving = false;            // sta salvando il profilo
+  bool _isUploadingImage = false;    // sta caricando la foto
+
+  final List<String> _months = const [
+    'Gennaio',
+    'Febbraio',
+    'Marzo',
+    'Aprile',
+    'Maggio',
+    'Giugno',
+    'Luglio',
+    'Agosto',
+    'Settembre',
+    'Ottobre',
+    'Novembre',
+    'Dicembre',
+  ];
+
+  final List<String> _genders = const [
+    'Maschio',
+    'Femmina',
+    'Altro',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _dayController.dispose();
+    _yearController.dispose();
+    _sportController.dispose();
+    _roleController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data() ?? {};
+
+        _nameController.text = (data['displayName'] ?? '') as String;
+        _dayController.text =
+        data['birthDay'] != null ? data['birthDay'].toString() : '';
+        _yearController.text =
+        data['birthYear'] != null ? data['birthYear'].toString() : '';
+        _selectedMonth = data['birthMonth'] as String?;
+        _selectedGender = data['gender'] as String?;
+        _sportController.text = (data['sport'] ?? '') as String;
+        _roleController.text = (data['role'] ?? '') as String;
+        _profileImageBase64 = data['profileImageBase64'] as String?;
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore nel caricamento del profilo: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  InputDecoration _roundedInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: BorderSide(
+          color: Colors.grey.shade400,
+        ),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+        borderSide: BorderSide(
+          color: Color(0xFFE91E63),
+          width: 1.5,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _changePhoto() async {
+    if (_isUploadingImage || _isSaving) return;
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Devi essere loggato per cambiare foto')),
+        );
+        return;
+      }
+
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 600,
+        imageQuality: 80, // qualità media
+      );
+
+      if (picked == null) return;
+
+      setState(() {
+        _isUploadingImage = true;
+      });
+
+      final bytes = await picked.readAsBytes();
+      final base64Str = base64Encode(bytes);
+
+      setState(() {
+        _profileImageBase64 = base64Str;
+      });
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .set(
+        {
+          'profileImageBase64': base64Str,
+        },
+        SetOptions(merge: true),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore durante il caricamento della foto: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingImage = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _save() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Devi essere loggato per salvare i dati')),
+        );
+        return;
+      }
+
+      setState(() => _isSaving = true);
+
+      int? day = _dayController.text.isNotEmpty
+          ? int.tryParse(_dayController.text)
+          : null;
+      int? year = _yearController.text.isNotEmpty
+          ? int.tryParse(_yearController.text)
+          : null;
+
+      final data = {
+        'displayName': _nameController.text.trim(),
+        'birthDay': day,
+        'birthMonth': _selectedMonth,
+        'birthYear': year,
+        'gender': _selectedGender,
+        'sport': _sportController.text.trim(),
+        'role': _roleController.text.trim(),
+        'profileImageBase64': _profileImageBase64,
+        'email': user.email,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .set(data, SetOptions(merge: true));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dati profilo salvati')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore nel salvataggio: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  ImageProvider? _getProfileImageProvider() {
+    if (_profileImageBase64 == null) return null;
+    try {
+      final bytes = base64Decode(_profileImageBase64!);
+      return MemoryImage(bytes);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Gestione Profilo'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Gestione Profilo'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Center(
+            child: GestureDetector(
+              onTap: _changePhoto,
+              child: Column(
+                children: [
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 40, // stessa grandezza dell’icona
+                        backgroundColor: colors.primary.withOpacity(0.2),
+                        backgroundImage: _getProfileImageProvider(),
+                        child: _getProfileImageProvider() == null
+                            ? Icon(
+                          Icons.person,
+                          size: 40,
+                          color: colors.primary,
+                        )
+                            : null,
+                      ),
+                      if (_isUploadingImage)
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.4),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Cambia foto profilo',
+                    style: TextStyle(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 30),
+
+          // Nome
+          TextField(
+            controller: _nameController,
+            decoration: _roundedInputDecoration('Nome'),
+          ),
+          const SizedBox(height: 16),
+
+          // Giorno, mese, anno di nascita
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: TextField(
+                  controller: _dayController,
+                  keyboardType: TextInputType.number,
+                  decoration: _roundedInputDecoration('Giorno'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: DropdownButtonFormField<String>(
+                  value: _selectedMonth,
+                  decoration: _roundedInputDecoration('Mese nascita'),
+                  borderRadius: BorderRadius.circular(20),
+                  items: _months
+                      .map(
+                        (m) => DropdownMenuItem(
+                      value: m,
+                      child: Text(m),
+                    ),
+                  )
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() => _selectedMonth = value);
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 1,
+                child: TextField(
+                  controller: _yearController,
+                  keyboardType: TextInputType.number,
+                  decoration: _roundedInputDecoration('Anno'),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Genere (PIÙ PICCOLO, come il dropdown dei mesi)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.40,
+              child: DropdownButtonFormField<String>(
+                value: _selectedGender,
+                decoration: _roundedInputDecoration('Genere'),
+                borderRadius: BorderRadius.circular(20),
+                items: _genders
+                    .map(
+                      (g) => DropdownMenuItem(
+                    value: g,
+                    child: Text(g),
+                  ),
+                )
+                    .toList(),
+                onChanged: (value) {
+                  setState(() => _selectedGender = value);
+                },
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Sport praticato
+          TextField(
+            controller: _sportController,
+            decoration: _roundedInputDecoration('Sport praticato'),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Ruolo del giocatore
+          TextField(
+            controller: _roleController,
+            decoration: _roundedInputDecoration('Ruolo del giocatore'),
+          ),
+
+          const SizedBox(height: 30),
+
+          BigButton(
+            text: 'Salva',
+            isLoading: _isSaving,
+            onPressed: (_isSaving || _isUploadingImage) ? null : _save,
+          ),
+        ],
+      ),
+    );
+  }
+}

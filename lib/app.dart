@@ -4,6 +4,8 @@ import 'theme_modifier.dart';
 import 'pagine/login_page.dart';
 import 'pagine/register_page.dart';
 import 'pagine/home_page.dart';
+import 'pagine/settings_page.dart';
+import 'pagine/profile_settings_page.dart'; // 👈 IMPORT AGGIUNTO
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -22,10 +24,7 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.light,
-
-            // 👉 FONT GLOBALE
             fontFamily: 'Poppins',
-
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFFE91E63),
               brightness: Brightness.light,
@@ -41,10 +40,7 @@ class MyApp extends StatelessWidget {
           darkTheme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.dark,
-
-            // 👉 FONT GLOBALE
             fontFamily: 'Poppins',
-
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFFE91E63),
               brightness: Brightness.dark,
@@ -61,6 +57,8 @@ class MyApp extends StatelessWidget {
             '/login': (context) => const LoginPage(),
             '/register': (context) => const RegisterPage(),
             '/home': (context) => const HomePage(),
+            '/settings': (context) => const SettingsPage(),
+            '/profile-settings': (context) => const ProfileSettingsPage(), // 👈 QUI
           },
         );
       },

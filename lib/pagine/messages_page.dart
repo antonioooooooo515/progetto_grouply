@@ -1,0 +1,21 @@
+import 'package:flutter/material.dart';
+
+class MessagesPage extends StatelessWidget {
+  const MessagesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Center(
+      child: Text(
+        'Sezione Messaggi\n(qui vedrai le tue chat)',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 18,
+          color: colors.onSurface,
+        ),
+      ),
+    );
+  }
+}

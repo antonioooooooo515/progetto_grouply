@@ -104,15 +104,15 @@ class _RegisterPageState extends State<RegisterPage> {
         title: Row(
           children: [
             Image.asset(
-              'lib/assets/logo/logo_nobg.png', // 👈
-              height: 50,                       // 👈 più grande
+              'lib/assets/logo/logo_nobg.png',
+              height: 50,
             ),
             const SizedBox(width: 8),
           ],
         ),
         actions: [
           IconButton(
-            iconSize: 32,                       // 👈 icona tema più grande
+            iconSize: 32,
             icon: Icon(
               isDark ? Icons.wb_sunny_outlined : Icons.dark_mode_outlined,
             ),
