@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'group_page.dart';
 import 'messages_page.dart';
 import 'payments_page.dart';
+import '../localization/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -42,8 +43,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _currentIndex = index;
     });
-    // 👇 debug: così vedi in console quando passi su Gruppo (index 1)
-    // print('Page index: $index');
   }
 
   void _openSettings() {
@@ -51,6 +50,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showGroupOptionsDialog() {
+    final loc = AppLocalizations.of(context);
+
     showDialog(
       context: context,
       builder: (context) {
@@ -63,9 +64,9 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Gruppi',
-                  style: TextStyle(
+                Text(
+                  loc.t('home_groups_dialog_title'),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -73,13 +74,13 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 16),
                 ListTile(
                   leading: const Icon(Icons.group_add),
-                  title: const Text('Crea nuovo gruppo'),
+                  title: Text(loc.t('home_groups_create')),
                   onTap: () {
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                      SnackBar(
                         content:
-                        Text('Funzione "Crea nuovo gruppo" in sviluppo'),
+                        Text(loc.t('home_groups_create_snackbar')),
                       ),
                     );
                     // TODO: vai alla pagina di creazione gruppo
@@ -87,15 +88,13 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.qr_code),
-                  title:
-                  const Text('Inserisci il codice di un gruppo esistente'),
+                  title: Text(loc.t('home_groups_join')),
                   onTap: () {
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Funzione "Inserisci codice gruppo" in sviluppo',
-                        ),
+                      SnackBar(
+                        content:
+                        Text(loc.t('home_groups_join_snackbar')),
                       ),
                     );
                     // TODO: vai alla pagina di inserimento codice
@@ -106,7 +105,7 @@ class _HomePageState extends State<HomePage> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Chiudi'),
+                    child: Text(loc.t('close_button')),
                   ),
                 ),
               ],
@@ -138,7 +137,7 @@ class _HomePageState extends State<HomePage> {
         onPageChanged: _onPageChanged,
         children: const [
           _HomePageContent(), // index 0
-          GroupPage(),        // index 1 -> qui deve apparire il +
+          GroupPage(),        // index 1
           MessagesPage(),     // index 2
           PaymentsPage(),     // index 3
         ],
@@ -174,7 +173,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
 
-      // 👇 FAB SOLO NELLA SEZIONE GRUPPO (index 1)
+      // FAB SOLO NELLA SEZIONE GRUPPO (index 1)
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: _currentIndex == 1
           ? FloatingActionButton(
@@ -192,9 +191,11 @@ class _HomePageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final loc = AppLocalizations.of(context);
+
     return Center(
       child: Text(
-        'Benvenuto nella Home di Grouply - Team Manager',
+        loc.t('home_message'),
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 18,

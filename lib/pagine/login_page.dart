@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../theme_modifier.dart';
+import '../localization/app_localizations.dart';
 import '../widgets/welcome_header.dart';
 import '../widgets/soft_card.dart';
 import '../widgets/soft_input.dart';
@@ -23,6 +25,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _isObscured = true;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   @override
   void dispose() {
@@ -32,6 +35,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _onLoginPressed() async {
+    final loc = AppLocalizations.of(context);
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
@@ -45,14 +50,14 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
-      String message = 'Errore durante il login';
+      String message = loc.t('error_login');
 
       if (e.code == 'user-not-found') {
-        message = 'Utente non trovato';
+        message = loc.t('error_user_not_found');
       } else if (e.code == 'wrong-password') {
-        message = 'Password errata';
+        message = loc.t('error_wrong_password');
       } else if (e.code == 'invalid-email') {
-        message = 'Email non valida';
+        message = loc.t('error_invalid_email');
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -60,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     } catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Errore imprevisto durante il login')),
+        SnackBar(content: Text(loc.t('error_unexpected_login'))),
       );
     } finally {
       if (mounted) {
@@ -69,9 +74,64 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    final loc = AppLocalizations.of(context);
+
+    if (_isGoogleLoading || _isLoading) return;
+
+    setState(() => _isGoogleLoading = true);
+
+    try {
+      final googleProvider = GoogleAuthProvider();
+      // forza la scelta dell'account ogni volta
+      googleProvider.setCustomParameters({'prompt': 'select_account'});
+
+      UserCredential credential;
+
+      if (kIsWeb) {
+        // Web
+        credential =
+        await FirebaseAuth.instance.signInWithPopup(googleProvider);
+      } else {
+        // Android / iOS
+        credential =
+        await FirebaseAuth.instance.signInWithProvider(googleProvider);
+      }
+
+      if (!mounted) return;
+
+      // se arrivi qui il login è andato a buon fine
+      Navigator.pushReplacementNamed(context, '/home');
+    } on FirebaseAuthException catch (e) {
+      String msg = 'Errore durante il login con Google';
+
+      if (e.code == 'account-exists-with-different-credential') {
+        msg = 'Esiste già un account con un altro metodo di accesso.';
+      } else if (e.code == 'invalid-credential') {
+        msg = 'Credenziale Google non valida.';
+      } else if (e.code == 'user-disabled') {
+        msg = 'Questo account è stato disabilitato.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+    } catch (e) {
+      // Se l’utente chiude la finestra o annulla, spesso viene considerato “canceled”
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore Google login: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isGoogleLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = AppTheme.themeMode.value == ThemeMode.dark;
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -106,84 +166,148 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const WelcomeHeader(
-                  title: 'Bentornato!',
-                  subtitle: 'Accedi per continuare',
+                WelcomeHeader(
+                  title: loc.t('login_title'),
+                  subtitle: loc.t('login_subtitle'),
                 ),
                 const SizedBox(height: 32),
                 SoftCard(
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        SoftInput(
-                          controller: _emailController,
-                          label: 'Email',
-                          icon: Icons.email_outlined,
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Inserisci la tua email';
-                            }
-                            if (!value.contains('@')) {
-                              return 'Email non valida';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        SoftInput(
-                          controller: _passwordController,
-                          label: 'Password',
-                          icon: Icons.lock_outline,
-                          obscureText: _isObscured,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Inserisci la password';
-                            }
-                            if (value.length < 6) {
-                              return 'Minimo 6 caratteri';
-                            }
-                            return null;
-                          },
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isObscured
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            SoftInput(
+                              controller: _emailController,
+                              label: loc.t('email_label'),
+                              icon: Icons.email_outlined,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return loc.t('validation_insert_email');
+                                }
+                                if (!value.contains('@')) {
+                                  return loc.t('validation_email_invalid');
+                                }
+                                return null;
+                              },
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _isObscured = !_isObscured;
-                              });
-                            },
+                            const SizedBox(height: 20),
+                            SoftInput(
+                              controller: _passwordController,
+                              label: loc.t('password_label'),
+                              icon: Icons.lock_outline,
+                              obscureText: _isObscured,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return loc.t('validation_insert_password');
+                                }
+                                if (value.length < 6) {
+                                  return loc.t('validation_min_6_chars');
+                                }
+                                return null;
+                              },
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isObscured
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isObscured = !_isObscured;
+                                  });
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TinyTextButton(
+                              text: loc.t('forgot_password'),
+                              alignment: Alignment.centerRight,
+                              onPressed: () {
+                                // TODO: reset password
+                              },
+                            ),
+                            const SizedBox(height: 10),
+                            BigButton(
+                              text: loc.t('login_button'),
+                              isLoading: _isLoading,
+                              onPressed: _onLoginPressed,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              color: Colors.grey.shade400,
+                              thickness: 0.8,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'oppure',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Divider(
+                              color: Colors.grey.shade400,
+                              thickness: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed:
+                          _isGoogleLoading ? null : _signInWithGoogle,
+                          style: OutlinedButton.styleFrom(
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          icon: _isGoogleLoading
+                              ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                              : const Icon(Icons.g_mobiledata, size: 28),
+                          label: Text(
+                            _isGoogleLoading
+                                ? 'Accesso con Google...'
+                                : loc.t('login_with_google'),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        TinyTextButton(
-                          text: 'Password dimenticata?',
-                          alignment: Alignment.centerRight,
-                          onPressed: () {
-                            // TODO
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        BigButton(
-                          text: 'Accedi',
-                          isLoading: _isLoading,
-                          onPressed: _onLoginPressed,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Non hai un account?'),
+                    Text(loc.t('no_account')),
                     TinyTextButton(
-                      text: 'Registrati',
+                      text: loc.t('go_to_register'),
                       onPressed: () {
                         Navigator.pushNamed(context, '/register');
                       },
