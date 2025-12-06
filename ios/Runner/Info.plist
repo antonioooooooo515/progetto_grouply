@@ -45,5 +45,24 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>Grouply ha bisogno di accedere alla galleria per scegliere la tua foto profilo.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Grouply ha bisogno di accedere alla fotocamera per scattare la tua foto profilo.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Grouply ha bisogno di accedere al microfono per i video.</string>
+
+    <key>CFBundleURLTypes</key>
+    <array>
+    	<dict>
+    		<key>CFBundleTypeRole</key>
+    		<string>Editor</string>
+    		<key>CFBundleURLSchemes</key>
+    		<array>
+    			<string>com.googleusercontent.apps.145866469912-hb152olqqv3532f71fbl9mn413btddj6</string>
+    		</array>
+    	</dict>
+    </array>
 </dict>
 </plist>

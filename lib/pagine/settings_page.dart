@@ -23,13 +23,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
   String _labelForCode(String code) {
     switch (code) {
-      case 'en':
-        return 'English';
-      case 'es':
-        return 'Español';
+      case 'en': return 'English';
+      case 'es': return 'Español';
+      case 'fr': return 'Français';
+      case 'de': return 'Deutsch';
+      case 'pt': return 'Português';
       case 'it':
-      default:
-        return 'Italiano';
+      default:   return 'Italiano';
     }
   }
 
@@ -43,73 +43,97 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       builder: (context) {
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  loc.t('settings_language_select_title'),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    loc.t('settings_language_select_title'),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.flag),
-                title: Text(loc.t('language_italian')),
-                onTap: () => Navigator.pop(context, 'it'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.flag_outlined),
-                title: Text(loc.t('language_english')),
-                onTap: () => Navigator.pop(context, 'en'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.flag_outlined),
-                title: Text(loc.t('language_spanish')),
-                onTap: () => Navigator.pop(context, 'es'),
-              ),
-              const SizedBox(height: 8),
-            ],
+                const Divider(height: 1),
+
+                ListTile(
+                  leading: const Text("🇮🇹", style: TextStyle(fontSize: 24)),
+                  title: Text(loc.t('language_italian')),
+                  onTap: () => Navigator.pop(context, 'it'),
+                ),
+                ListTile(
+                  leading: const Text("🇺🇸", style: TextStyle(fontSize: 24)),
+                  title: Text(loc.t('language_english')),
+                  onTap: () => Navigator.pop(context, 'en'),
+                ),
+                ListTile(
+                  leading: const Text("🇪🇸", style: TextStyle(fontSize: 24)),
+                  title: Text(loc.t('language_spanish')),
+                  onTap: () => Navigator.pop(context, 'es'),
+                ),
+                ListTile(
+                  leading: const Text("🇫🇷", style: TextStyle(fontSize: 24)),
+                  title: Text(loc.t('language_french')),
+                  onTap: () => Navigator.pop(context, 'fr'),
+                ),
+                ListTile(
+                  leading: const Text("🇩🇪", style: TextStyle(fontSize: 24)),
+                  title: Text(loc.t('language_german')),
+                  onTap: () => Navigator.pop(context, 'de'),
+                ),
+                ListTile(
+                  leading: const Text("🇧🇷", style: TextStyle(fontSize: 24)),
+                  title: Text(loc.t('language_portuguese')),
+                  onTap: () => Navigator.pop(context, 'pt'),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         );
       },
     );
 
     if (result != null && mounted) {
-      Locale newLocale;
-
-      switch (result) {
-        case 'en':
-          newLocale = const Locale('en');
-          _selectedLanguage = 'English';
-          break;
-        case 'es':
-          newLocale = const Locale('es');
-          _selectedLanguage = 'Español';
-          break;
-        case 'it':
-        default:
-          newLocale = const Locale('it');
-          _selectedLanguage = 'Italiano';
-          break;
-      }
+      Locale newLocale = Locale(result);
+      _selectedLanguage = _labelForCode(result);
 
       AppLanguage.setLocale(newLocale);
-
       setState(() {});
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            loc.t(
-              'language_changed_snackbar',
-              params: {'language': _selectedLanguage},
-            ),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  loc.t('language_changed_snackbar', params: {'language': _selectedLanguage}),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+            ],
           ),
+
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.black.withOpacity(0.9),
+          elevation: 0,
+          margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+          shape: const StadiumBorder(),
+          duration: const Duration(milliseconds: 2000),
         ),
       );
     }
@@ -125,16 +149,28 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: Text(loc.t('settings_title')),
         elevation: 0,
+        // 🔥 PULSANTE INDIETRO INTELLIGENTE
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // Se c'è una pagina precedente, torna indietro
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              // Se non c'è (es. dopo Hot Restart), vai forzatamente alla Home
+              Navigator.pushReplacementNamed(context, '/home');
+            }
+          },
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Contenuto scrollabile
             Expanded(
               child: ListView(
                 children: [
-                  // 1️⃣ SEZIONE TEMA
+                  // TEMA
                   Text(
                     loc.t('settings_section_theme'),
                     style: TextStyle(
@@ -172,7 +208,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                   const SizedBox(height: 24),
 
-                  // 2️⃣ ACCOUNT
+                  // ACCOUNT
                   Text(
                     loc.t('settings_section_account'),
                     style: TextStyle(
@@ -190,14 +226,13 @@ class _SettingsPageState extends State<SettingsPage> {
                     child: ListTile(
                       leading: const Icon(Icons.person_outline),
                       title: Text(user?.email ?? 'Nessun utente'),
-                      subtitle:
-                      Text(loc.t('settings_account_email_subtitle')),
+                      subtitle: Text(loc.t('settings_account_email_subtitle')),
                     ),
                   ),
 
                   const SizedBox(height: 24),
 
-                  // 3️⃣ PROFILO
+                  // PROFILO
                   Text(
                     loc.t('settings_section_profile'),
                     style: TextStyle(
@@ -215,8 +250,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     child: ListTile(
                       leading: const Icon(Icons.manage_accounts_outlined),
                       title: Text(loc.t('settings_profile_manage_title')),
-                      subtitle:
-                      Text(loc.t('settings_profile_manage_subtitle')),
+                      subtitle: Text(loc.t('settings_profile_manage_subtitle')),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
                         Navigator.pushNamed(context, '/profile-settings');
@@ -226,7 +260,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                   const SizedBox(height: 24),
 
-                  // 4️⃣ LINGUA
+                  // LINGUA
                   Text(
                     loc.t('settings_section_language'),
                     style: TextStyle(
@@ -255,7 +289,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
             const SizedBox(height: 16),
 
-            // 🔴 Pulsante Esci
+            // LOGOUT
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

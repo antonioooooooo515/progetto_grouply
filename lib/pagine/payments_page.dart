@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../localization/app_localizations.dart';
 
 class PaymentsPage extends StatelessWidget {
   const PaymentsPage({super.key});
@@ -6,10 +7,11 @@ class PaymentsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final loc = AppLocalizations.of(context);
 
     return Center(
       child: Text(
-        'Sezione Pagamenti\n(qui gestirai abbonamenti, quote, ecc.)',
+        loc.t('payments_placeholder'),
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 18,

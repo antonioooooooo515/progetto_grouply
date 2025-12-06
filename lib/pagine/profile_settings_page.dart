@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../widgets/big_button.dart';
+import '../localization/app_localizations.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
   const ProfileSettingsPage({super.key});
@@ -31,25 +32,15 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   bool _isSaving = false;            // sta salvando il profilo
   bool _isUploadingImage = false;    // sta caricando la foto
 
+  // Nota: I valori dei mesi restano in italiano per coerenza col database,
+  // ma l'interfaccia attorno sarà tradotta.
   final List<String> _months = const [
-    'Gennaio',
-    'Febbraio',
-    'Marzo',
-    'Aprile',
-    'Maggio',
-    'Giugno',
-    'Luglio',
-    'Agosto',
-    'Settembre',
-    'Ottobre',
-    'Novembre',
-    'Dicembre',
+    'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+    'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
   ];
 
   final List<String> _genders = const [
-    'Maschio',
-    'Femmina',
-    'Altro',
+    'Maschio', 'Femmina', 'Altro',
   ];
 
   @override
@@ -89,16 +80,25 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         data['birthDay'] != null ? data['birthDay'].toString() : '';
         _yearController.text =
         data['birthYear'] != null ? data['birthYear'].toString() : '';
-        _selectedMonth = data['birthMonth'] as String?;
-        _selectedGender = data['gender'] as String?;
+
+        // Controllo se il valore salvato esiste nella lista, altrimenti null
+        String? savedMonth = data['birthMonth'] as String?;
+        if (_months.contains(savedMonth)) {
+          _selectedMonth = savedMonth;
+        }
+
+        String? savedGender = data['gender'] as String?;
+        if (_genders.contains(savedGender)) {
+          _selectedGender = savedGender;
+        }
+
         _sportController.text = (data['sport'] ?? '') as String;
         _roleController.text = (data['role'] ?? '') as String;
         _profileImageBase64 = data['profileImageBase64'] as String?;
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Errore nel caricamento del profilo: $e')),
-      );
+      // Errore silenzioso o log
+      debugPrint("Errore caricamento profilo: $e");
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -129,13 +129,15 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   }
 
   Future<void> _changePhoto() async {
+    final loc = AppLocalizations.of(context);
+
     if (_isUploadingImage || _isSaving) return;
 
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Devi essere loggato per cambiare foto')),
+          SnackBar(content: Text(loc.t('toast_login_required'))),
         );
         return;
       }
@@ -144,7 +146,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
       final picked = await picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 600,
-        imageQuality: 80, // qualità media
+        imageQuality: 80,
       );
 
       if (picked == null) return;
@@ -171,7 +173,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Errore durante il caricamento della foto: $e')),
+        SnackBar(content: Text('${loc.t('toast_photo_error')}: $e')),
       );
     } finally {
       if (mounted) {
@@ -183,11 +185,13 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   }
 
   Future<void> _save() async {
+    final loc = AppLocalizations.of(context);
+
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Devi essere loggato per salvare i dati')),
+          SnackBar(content: Text(loc.t('toast_login_required'))),
         );
         return;
       }
@@ -219,13 +223,17 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
           .doc(user.uid)
           .set(data, SetOptions(merge: true));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dati profilo salvati')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.t('toast_save_success'))),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Errore nel salvataggio: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -246,11 +254,12 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final loc = AppLocalizations.of(context);
 
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Gestione Profilo'),
+          title: Text(loc.t('profile_title')),
         ),
         body: const Center(
           child: CircularProgressIndicator(),
@@ -260,7 +269,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gestione Profilo'),
+        title: Text(loc.t('profile_title')),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -274,7 +283,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                     alignment: Alignment.center,
                     children: [
                       CircleAvatar(
-                        radius: 40, // stessa grandezza dell’icona
+                        radius: 40,
                         backgroundColor: colors.primary.withOpacity(0.2),
                         backgroundImage: _getProfileImageProvider(),
                         child: _getProfileImageProvider() == null
@@ -309,7 +318,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Cambia foto profilo',
+                    loc.t('profile_change_photo'),
                     style: TextStyle(
                       color: colors.primary,
                       fontWeight: FontWeight.w500,
@@ -325,7 +334,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
           // Nome
           TextField(
             controller: _nameController,
-            decoration: _roundedInputDecoration('Nome'),
+            decoration: _roundedInputDecoration(loc.t('label_name')),
           ),
           const SizedBox(height: 16),
 
@@ -337,7 +346,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 child: TextField(
                   controller: _dayController,
                   keyboardType: TextInputType.number,
-                  decoration: _roundedInputDecoration('Giorno'),
+                  decoration: _roundedInputDecoration(loc.t('label_day')),
                 ),
               ),
               const SizedBox(width: 12),
@@ -345,7 +354,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 flex: 2,
                 child: DropdownButtonFormField<String>(
                   value: _selectedMonth,
-                  decoration: _roundedInputDecoration('Mese nascita'),
+                  decoration: _roundedInputDecoration(loc.t('label_month')),
                   borderRadius: BorderRadius.circular(20),
                   items: _months
                       .map(
@@ -366,7 +375,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 child: TextField(
                   controller: _yearController,
                   keyboardType: TextInputType.number,
-                  decoration: _roundedInputDecoration('Anno'),
+                  decoration: _roundedInputDecoration(loc.t('label_year')),
                 ),
               ),
             ],
@@ -374,14 +383,14 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
           const SizedBox(height: 16),
 
-          // Genere (PIÙ PICCOLO, come il dropdown dei mesi)
+          // Genere
           Align(
             alignment: Alignment.centerLeft,
             child: SizedBox(
               width: MediaQuery.of(context).size.width * 0.40,
               child: DropdownButtonFormField<String>(
                 value: _selectedGender,
-                decoration: _roundedInputDecoration('Genere'),
+                decoration: _roundedInputDecoration(loc.t('label_gender')),
                 borderRadius: BorderRadius.circular(20),
                 items: _genders
                     .map(
@@ -403,7 +412,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
           // Sport praticato
           TextField(
             controller: _sportController,
-            decoration: _roundedInputDecoration('Sport praticato'),
+            decoration: _roundedInputDecoration(loc.t('label_sport')),
           ),
 
           const SizedBox(height: 16),
@@ -411,13 +420,13 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
           // Ruolo del giocatore
           TextField(
             controller: _roleController,
-            decoration: _roundedInputDecoration('Ruolo del giocatore'),
+            decoration: _roundedInputDecoration(loc.t('label_role')),
           ),
 
           const SizedBox(height: 30),
 
           BigButton(
-            text: 'Salva',
+            text: loc.t('button_save'),
             isLoading: _isSaving,
             onPressed: (_isSaving || _isUploadingImage) ? null : _save,
           ),

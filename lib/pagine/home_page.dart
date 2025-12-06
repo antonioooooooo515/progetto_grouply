@@ -1,4 +1,7 @@
+import 'dart:math'; // Per generare il codice casuale
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'group_page.dart';
 import 'messages_page.dart';
@@ -49,6 +52,157 @@ class _HomePageState extends State<HomePage> {
     Navigator.pushNamed(context, '/settings');
   }
 
+  // --- LOGICA CREAZIONE GRUPPO ---
+
+  String _generateInviteCode() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final rnd = Random();
+    return String.fromCharCodes(Iterable.generate(
+      6,
+          (_) => chars.codeUnitAt(rnd.nextInt(chars.length)),
+    ));
+  }
+
+  Future<void> _createGroup(String name, String sport) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final loc = AppLocalizations.of(context);
+
+    if (user == null) return;
+
+    try {
+      // 1. Genera codice
+      String inviteCode = _generateInviteCode();
+
+      // 2. Riferimento al documento (ID automatico)
+      final docRef = FirebaseFirestore.instance.collection('groups').doc();
+
+      // 3. Dati da salvare
+      final groupData = {
+        'id': docRef.id,
+        'name': name,
+        'sport': sport,
+        'inviteCode': inviteCode,
+        'adminId': user.uid,
+        'createdAt': FieldValue.serverTimestamp(),
+        'members': [user.uid], // L'admin è il primo membro
+      };
+
+      // 4. Scrittura su Firestore
+      await docRef.set(groupData);
+
+      if (mounted) {
+        // Chiude il dialog se è ancora aperto (gestito nel metodo _showCreateGroupDialog)
+        // Mostra conferma
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              loc.t('snack_group_created', params: {'code': inviteCode}),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              loc.t('snack_create_error', params: {'error': e.toString()}),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showCreateGroupDialog() {
+    final loc = AppLocalizations.of(context);
+    final nameController = TextEditingController();
+    final sportController = TextEditingController();
+
+    // Variabile di stato locale per il dialog (per mostrare il caricamento)
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Text(loc.t('dialog_create_group_title')),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: loc.t('label_team_name'),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: sportController,
+                    decoration: InputDecoration(
+                      labelText: loc.t('label_team_sport'),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () => Navigator.of(context).pop(),
+                  child: Text(loc.t('button_cancel')),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                    if (nameController.text.trim().isEmpty) return;
+
+                    setStateDialog(() => isLoading = true);
+
+                    // Chiamata alla funzione di creazione
+                    await _createGroup(
+                      nameController.text.trim(),
+                      sportController.text.trim(),
+                    );
+
+                    if (context.mounted) {
+                      Navigator.of(context).pop(); // Chiude il dialog
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                      : Text(loc.t('button_create')),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showGroupOptionsDialog() {
     final loc = AppLocalizations.of(context);
 
@@ -72,20 +226,18 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // Opzione: CREA GRUPPO
                 ListTile(
                   leading: const Icon(Icons.group_add),
                   title: Text(loc.t('home_groups_create')),
                   onTap: () {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content:
-                        Text(loc.t('home_groups_create_snackbar')),
-                      ),
-                    );
-                    // TODO: vai alla pagina di creazione gruppo
+                    Navigator.of(context).pop(); // Chiude il menu opzioni
+                    _showCreateGroupDialog();    // Apre il dialog di creazione
                   },
                 ),
+
+                // Opzione: UNISCITI A GRUPPO
                 ListTile(
                   leading: const Icon(Icons.qr_code),
                   title: Text(loc.t('home_groups_join')),
@@ -93,8 +245,7 @@ class _HomePageState extends State<HomePage> {
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content:
-                        Text(loc.t('home_groups_join_snackbar')),
+                        content: Text(loc.t('home_groups_join_snackbar')),
                       ),
                     );
                     // TODO: vai alla pagina di inserimento codice
@@ -136,10 +287,10 @@ class _HomePageState extends State<HomePage> {
         controller: _pageController,
         onPageChanged: _onPageChanged,
         children: const [
-          _HomePageContent(), // index 0
-          GroupPage(),        // index 1
-          MessagesPage(),     // index 2
-          PaymentsPage(),     // index 3
+          _HomePageContent(), // index 0 (Home)
+          GroupPage(),        // index 1 (Gruppi)
+          MessagesPage(),     // index 2 (Messaggi)
+          PaymentsPage(),     // index 3 (Pagamenti)
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -149,6 +300,7 @@ class _HomePageState extends State<HomePage> {
         unselectedItemColor: Colors.grey,
         showSelectedLabels: false,
         showUnselectedLabels: false,
+        type: BottomNavigationBarType.fixed, // Impedisce ai pulsanti di muoversi se sono più di 3
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),

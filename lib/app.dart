@@ -21,15 +21,20 @@ class MyApp extends StatelessWidget {
         return ValueListenableBuilder<ThemeMode>(
           valueListenable: AppTheme.themeMode,
           builder: (context, themeMode, _) {
+
             return MaterialApp(
               debugShowCheckedModeBanner: false,
               title: 'Grouply - Team Manager',
-              themeMode: themeMode,
+
+              // --- GESTIONE LINGUA ---
               locale: locale,
               supportedLocales: const [
-                Locale('it'),
-                Locale('en'),
-                Locale('es'),
+                Locale('it'), // Italiano
+                Locale('en'), // Inglese
+                Locale('es'), // Spagnolo
+                Locale('fr'), // Francese (NUOVO)
+                Locale('de'), // Tedesco (NUOVO)
+                Locale('pt'), // Portoghese (NUOVO)
               ],
               localizationsDelegates: const [
                 AppLocalizationsDelegate(),
@@ -38,7 +43,9 @@ class MyApp extends StatelessWidget {
                 GlobalCupertinoLocalizations.delegate,
               ],
 
-              // 🌞 LIGHT THEME
+              // --- GESTIONE TEMA ---
+              themeMode: themeMode,
+
               theme: ThemeData(
                 useMaterial3: true,
                 brightness: Brightness.light,
@@ -51,10 +58,10 @@ class MyApp extends StatelessWidget {
                 appBarTheme: const AppBarTheme(
                   backgroundColor: Color(0xFFF5F5F5),
                   elevation: 0,
+                  iconTheme: IconThemeData(color: Colors.black),
                 ),
               ),
 
-              // 🌙 DARK THEME
               darkTheme: ThemeData(
                 useMaterial3: true,
                 brightness: Brightness.dark,
@@ -67,9 +74,11 @@ class MyApp extends StatelessWidget {
                 appBarTheme: const AppBarTheme(
                   backgroundColor: Color(0xFF242424),
                   elevation: 0,
+                  iconTheme: IconThemeData(color: Colors.white),
                 ),
               ),
 
+              // --- ROUTES ---
               initialRoute: '/login',
               routes: {
                 '/login': (context) => const LoginPage(),
