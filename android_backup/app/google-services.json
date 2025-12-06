@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "145866469912",
+    "project_id": "grouply-team-manager",
+    "storage_bucket": "grouply-team-manager.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:145866469912:android:31e7b6ae035508040ec96d",
+        "android_client_info": {
+          "package_name": "com.example.progetto_grouply"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "145866469912-kpo3tsq273jg2b63rlbpmbkr9lp0tpe2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_hx9nUcxskgSvZ_a9ZpOSL3NMNVdpKKY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "145866469912-kpo3tsq273jg2b63rlbpmbkr9lp0tpe2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "145866469912-hb152olqqv3532f71fbl9mn413btddj6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.progettoGrouply"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
