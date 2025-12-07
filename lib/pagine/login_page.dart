@@ -83,28 +83,20 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final googleProvider = GoogleAuthProvider();
-      // forza la scelta dell'account ogni volta
       googleProvider.setCustomParameters({'prompt': 'select_account'});
 
       UserCredential credential;
 
       if (kIsWeb) {
-        // Web
-        credential =
-        await FirebaseAuth.instance.signInWithPopup(googleProvider);
+        credential = await FirebaseAuth.instance.signInWithPopup(googleProvider);
       } else {
-        // Android / iOS
-        credential =
-        await FirebaseAuth.instance.signInWithProvider(googleProvider);
+        credential = await FirebaseAuth.instance.signInWithProvider(googleProvider);
       }
 
       if (!mounted) return;
-
-      // se arrivi qui il login è andato a buon fine
       Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
       String msg = 'Errore durante il login con Google';
-
       if (e.code == 'account-exists-with-different-credential') {
         msg = 'Esiste già un account con un altro metodo di accesso.';
       } else if (e.code == 'invalid-credential') {
@@ -112,12 +104,8 @@ class _LoginPageState extends State<LoginPage> {
       } else if (e.code == 'user-disabled') {
         msg = 'Questo account è stato disabilitato.';
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } catch (e) {
-      // Se l’utente chiude la finestra o annulla, spesso viene considerato “canceled”
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Errore Google login: $e')),
       );
@@ -137,18 +125,24 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         elevation: 0,
+        titleSpacing: 24,
         title: Row(
           children: [
             Image.asset(
-              'lib/assets/logo/logo_nobg.png',
-              height: 50,
+              'lib/assets/logo/logo_nobg.png', // Logo senza sfondo
+              height: 40,
+              fit: BoxFit.contain,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
+            const Text(
+              "Grouply",
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+            ),
           ],
         ),
         actions: [
           IconButton(
-            iconSize: 32,
+            iconSize: 28,
             icon: Icon(
               isDark ? Icons.wb_sunny_outlined : Icons.dark_mode_outlined,
             ),
@@ -157,6 +151,7 @@ class _LoginPageState extends State<LoginPage> {
               setState(() {});
             },
           ),
+          const SizedBox(width: 16),
         ],
       ),
       body: SafeArea(
@@ -242,59 +237,35 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          Expanded(
-                            child: Divider(
-                              color: Colors.grey.shade400,
-                              thickness: 0.8,
-                            ),
-                          ),
+                          Expanded(child: Divider(color: Colors.grey.shade400, thickness: 0.8)),
                           const SizedBox(width: 8),
-                          Text(
-                            'oppure',
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 13,
-                            ),
-                          ),
+                          Text('oppure', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                           const SizedBox(width: 8),
-                          Expanded(
-                            child: Divider(
-                              color: Colors.grey.shade400,
-                              thickness: 0.8,
-                            ),
-                          ),
+                          Expanded(child: Divider(color: Colors.grey.shade400, thickness: 0.8)),
                         ],
                       ),
                       const SizedBox(height: 16),
+
+                      // PULSANTE GOOGLE CON LOGO REALE
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
-                          onPressed:
-                          _isGoogleLoading ? null : _signInWithGoogle,
+                          onPressed: _isGoogleLoading ? null : _signInWithGoogle,
                           style: OutlinedButton.styleFrom(
-                            padding:
-                            const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            backgroundColor: Colors.white, // Sfondo bianco per risaltare il logo colorato
+                            side: BorderSide(color: Colors.grey.shade300),
                           ),
                           icon: _isGoogleLoading
-                              ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          )
-                              : const Icon(Icons.g_mobiledata, size: 28),
+                              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                              : Image.asset(
+                            'lib/assets/logo/google_logo.png', // 👈 LOGO REALE
+                            height: 24,
+                          ),
                           label: Text(
-                            _isGoogleLoading
-                                ? 'Accesso con Google...'
-                                : loc.t('login_with_google'),
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            _isGoogleLoading ? 'Accesso con Google...' : loc.t('login_with_google'),
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
                           ),
                         ),
                       ),

@@ -58,24 +58,17 @@ class _RegisterPageState extends State<RegisterPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            loc.t('registration_success').split('\n').first,
-          ),
+          content: Text(loc.t('registration_success').split('\n').first),
           duration: const Duration(seconds: 2),
         ),
       );
 
       Future.delayed(const Duration(seconds: 7), () {
         if (!mounted) return;
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/login',
-              (route) => false,
-        );
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
       });
     } on FirebaseAuthException catch (e) {
       String message = loc.t('error_register');
-
       if (e.code == 'email-already-in-use') {
         message = loc.t('error_email_in_use');
       } else if (e.code == 'weak-password') {
@@ -83,15 +76,10 @@ class _RegisterPageState extends State<RegisterPage> {
       } else if (e.code == 'invalid-email') {
         message = loc.t('error_invalid_email');
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(loc.t('error_unexpected_register')),
-        ),
+        SnackBar(content: Text(loc.t('error_unexpected_register'))),
       );
     } finally {
       if (mounted) {
@@ -114,40 +102,30 @@ class _RegisterPageState extends State<RegisterPage> {
       UserCredential credential;
 
       if (kIsWeb) {
-        credential =
-        await FirebaseAuth.instance.signInWithPopup(googleProvider);
+        credential = await FirebaseAuth.instance.signInWithPopup(googleProvider);
       } else {
-        credential =
-        await FirebaseAuth.instance.signInWithProvider(googleProvider);
+        credential = await FirebaseAuth.instance.signInWithProvider(googleProvider);
       }
 
       if (!mounted) return;
 
-      // Trattiamo questo come "registrazione completata"
       setState(() {
         _isRegistered = true;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            loc.t('registration_success').split('\n').first,
-          ),
+          content: Text(loc.t('registration_success').split('\n').first),
           duration: const Duration(seconds: 2),
         ),
       );
 
       Future.delayed(const Duration(seconds: 7), () {
         if (!mounted) return;
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/login',
-              (route) => false,
-        );
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
       });
     } on FirebaseAuthException catch (e) {
       String msg = 'Errore durante la registrazione con Google';
-
       if (e.code == 'account-exists-with-different-credential') {
         msg = 'Esiste già un account con un altro metodo di accesso.';
       } else if (e.code == 'invalid-credential') {
@@ -155,15 +133,10 @@ class _RegisterPageState extends State<RegisterPage> {
       } else if (e.code == 'user-disabled') {
         msg = 'Questo account è stato disabilitato.';
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Errore Google registrazione: $e'),
-        ),
+        SnackBar(content: Text('Errore Google registrazione: $e')),
       );
     } finally {
       if (mounted) {
@@ -181,13 +154,19 @@ class _RegisterPageState extends State<RegisterPage> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         elevation: 0,
+        titleSpacing: 24,
         title: Row(
           children: [
             Image.asset(
-              'lib/assets/logo/logo_nobg.png',
-              height: 50,
+              'lib/assets/logo/logo_nobg.png', // Logo
+              height: 40,
+              fit: BoxFit.contain,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
+            const Text(
+              "Grouply",
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+            ),
           ],
         ),
         actions: [
@@ -201,6 +180,7 @@ class _RegisterPageState extends State<RegisterPage> {
               setState(() {});
             },
           ),
+          const SizedBox(width: 16),
         ],
       ),
       body: SafeArea(
@@ -220,21 +200,14 @@ class _RegisterPageState extends State<RegisterPage> {
                       ? Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.check_circle_outline,
-                        size: 60,
-                        color: Colors.green,
-                      ),
+                      const Icon(Icons.check_circle_outline, size: 60, color: Colors.green),
                       const SizedBox(height: 16),
                       Text(
                         loc.t('registration_success'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 16,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withOpacity(0.85),
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.85),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -242,11 +215,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         text: loc.t('go_to_login_button'),
                         isLoading: false,
                         onPressed: () {
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            '/login',
-                                (route) => false,
-                          );
+                          Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
                         },
                       ),
                     ],
@@ -262,16 +231,13 @@ class _RegisterPageState extends State<RegisterPage> {
                               controller: _emailController,
                               label: loc.t('email_label'),
                               icon: Icons.email_outlined,
-                              keyboardType:
-                              TextInputType.emailAddress,
+                              keyboardType: TextInputType.emailAddress,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return loc.t(
-                                      'validation_insert_email');
+                                  return loc.t('validation_insert_email');
                                 }
                                 if (!value.contains('@')) {
-                                  return loc.t(
-                                      'validation_email_invalid');
+                                  return loc.t('validation_email_invalid');
                                 }
                                 return null;
                               },
@@ -284,21 +250,15 @@ class _RegisterPageState extends State<RegisterPage> {
                               obscureText: _isObscured,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return loc.t(
-                                      'validation_insert_password_register');
+                                  return loc.t('validation_insert_password_register');
                                 }
                                 if (value.length < 6) {
-                                  return loc.t(
-                                      'validation_min_6_chars');
+                                  return loc.t('validation_min_6_chars');
                                 }
                                 return null;
                               },
                               suffixIcon: IconButton(
-                                icon: Icon(
-                                  _isObscured
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                ),
+                                icon: Icon(_isObscured ? Icons.visibility_off : Icons.visibility),
                                 onPressed: () {
                                   setState(() {
                                     _isObscured = !_isObscured;
@@ -309,19 +269,15 @@ class _RegisterPageState extends State<RegisterPage> {
                             const SizedBox(height: 20),
                             SoftInput(
                               controller: _confirmController,
-                              label:
-                              loc.t('confirm_password_label'),
+                              label: loc.t('confirm_password_label'),
                               icon: Icons.lock_outline,
                               obscureText: _isObscured,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return loc.t(
-                                      'validation_confirm_password');
+                                  return loc.t('validation_confirm_password');
                                 }
-                                if (value !=
-                                    _passwordController.text) {
-                                  return loc.t(
-                                      'validation_passwords_not_match');
+                                if (value != _passwordController.text) {
+                                  return loc.t('validation_passwords_not_match');
                                 }
                                 return null;
                               },
@@ -338,65 +294,35 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          Expanded(
-                            child: Divider(
-                              color: Colors.grey.shade400,
-                              thickness: 0.8,
-                            ),
-                          ),
+                          Expanded(child: Divider(color: Colors.grey.shade400, thickness: 0.8)),
                           const SizedBox(width: 8),
-                          Text(
-                            'oppure',
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 13,
-                            ),
-                          ),
+                          Text('oppure', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                           const SizedBox(width: 8),
-                          Expanded(
-                            child: Divider(
-                              color: Colors.grey.shade400,
-                              thickness: 0.8,
-                            ),
-                          ),
+                          Expanded(child: Divider(color: Colors.grey.shade400, thickness: 0.8)),
                         ],
                       ),
                       const SizedBox(height: 16),
+
+                      // PULSANTE GOOGLE CON LOGO REALE
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
-                          onPressed: _isGoogleLoading
-                              ? null
-                              : _signUpWithGoogle,
+                          onPressed: _isGoogleLoading ? null : _signUpWithGoogle,
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                              BorderRadius.circular(20),
-                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            backgroundColor: Colors.white,
+                            side: BorderSide(color: Colors.grey.shade300),
                           ),
                           icon: _isGoogleLoading
-                              ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child:
-                            CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          )
-                              : const Icon(
-                            Icons.g_mobiledata,
-                            size: 28,
+                              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                              : Image.asset(
+                            'lib/assets/logo/google_logo.png', // 👈 LOGO REALE
+                            height: 24,
                           ),
                           label: Text(
-                            _isGoogleLoading
-                                ? 'Registrazione con Google...'
-                                : loc.t('register_with_google'),
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            _isGoogleLoading ? 'Registrazione con Google...' : loc.t('register_with_google'),
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
                           ),
                         ),
                       ),
@@ -411,11 +337,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     TinyTextButton(
                       text: loc.t('login_button'),
                       onPressed: () {
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          '/login',
-                              (route) => false,
-                        );
+                        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
                       },
                     ),
                   ],

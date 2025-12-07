@@ -4,14 +4,50 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'theme_modifier.dart';
 import 'localization/app_localizations.dart';
 
+// Pagine
+import 'pagine/splash_page.dart';
 import 'pagine/login_page.dart';
 import 'pagine/register_page.dart';
 import 'pagine/home_page.dart';
 import 'pagine/settings_page.dart';
 import 'pagine/profile_settings_page.dart';
 
-class MyApp extends StatelessWidget {
+// 1. Chiave Globale per controllare la navigazione da fuori il contesto
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+// 2. Trasformato in StatefulWidget per usare WidgetsBindingObserver
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+
+  @override
+  void initState() {
+    super.initState();
+    // 3. Iniziamo ad ascoltare lo stato dell'app
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // 4. Questa funzione scatta quando l'app viene minimizzata o riaperta
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Se l'app torna in primo piano (Resumed)
+    if (state == AppLifecycleState.resumed) {
+      // 🔥 FORZA IL RITORNO ALLA SPLASH SCREEN
+      // (route) => false rimuove tutte le pagine precedenti dallo stack
+      navigatorKey.currentState?.pushNamedAndRemoveUntil('/', (route) => false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +59,9 @@ class MyApp extends StatelessWidget {
           builder: (context, themeMode, _) {
 
             return MaterialApp(
+              // 5. Colleghiamo la chiave globale al navigatore
+              navigatorKey: navigatorKey,
+
               debugShowCheckedModeBanner: false,
               title: 'Grouply - Team Manager',
 
@@ -32,9 +71,9 @@ class MyApp extends StatelessWidget {
                 Locale('it'), // Italiano
                 Locale('en'), // Inglese
                 Locale('es'), // Spagnolo
-                Locale('fr'), // Francese (NUOVO)
-                Locale('de'), // Tedesco (NUOVO)
-                Locale('pt'), // Portoghese (NUOVO)
+                Locale('fr'), // Francese
+                Locale('de'), // Tedesco
+                Locale('pt'), // Portoghese
               ],
               localizationsDelegates: const [
                 AppLocalizationsDelegate(),
@@ -79,8 +118,10 @@ class MyApp extends StatelessWidget {
               ),
 
               // --- ROUTES ---
-              initialRoute: '/login',
+              initialRoute: '/',
+
               routes: {
+                '/': (context) => const SplashPage(),
                 '/login': (context) => const LoginPage(),
                 '/register': (context) => const RegisterPage(),
                 '/home': (context) => const HomePage(),

@@ -1,11 +1,13 @@
-import 'dart:math'; // Per generare il codice casuale
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart'; // Per le date
 
 import 'group_page.dart';
 import 'messages_page.dart';
 import 'payments_page.dart';
+import 'event_details_page.dart';
 import '../localization/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
@@ -52,7 +54,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.pushNamed(context, '/settings');
   }
 
-  // --- LOGICA CREAZIONE GRUPPO ---
+  // --- LOGICA GRUPPI ---
 
   String _generateInviteCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -70,13 +72,9 @@ class _HomePageState extends State<HomePage> {
     if (user == null) return;
 
     try {
-      // 1. Genera codice
       String inviteCode = _generateInviteCode();
-
-      // 2. Riferimento al documento (ID automatico)
       final docRef = FirebaseFirestore.instance.collection('groups').doc();
 
-      // 3. Dati da salvare
       final groupData = {
         'id': docRef.id,
         'name': name,
@@ -84,15 +82,12 @@ class _HomePageState extends State<HomePage> {
         'inviteCode': inviteCode,
         'adminId': user.uid,
         'createdAt': FieldValue.serverTimestamp(),
-        'members': [user.uid], // L'admin è il primo membro
+        'members': [user.uid],
       };
 
-      // 4. Scrittura su Firestore
       await docRef.set(groupData);
 
       if (mounted) {
-        // Chiude il dialog se è ancora aperto (gestito nel metodo _showCreateGroupDialog)
-        // Mostra conferma
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -116,12 +111,55 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _showCreateGroupDialog() {
+  Future<String?> _joinGroupLogic(String code) async {
+    final user = FirebaseAuth.instance.currentUser;
     final loc = AppLocalizations.of(context);
-    final nameController = TextEditingController();
-    final sportController = TextEditingController();
 
-    // Variabile di stato locale per il dialog (per mostrare il caricamento)
+    if (user == null) return loc.t('error_user_not_found');
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('groups')
+          .where('inviteCode', isEqualTo: code)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        return loc.t('error_code_not_found');
+      }
+
+      final groupDoc = querySnapshot.docs.first;
+      final groupData = groupDoc.data();
+      final members = List<String>.from(groupData['members'] ?? []);
+
+      if (members.contains(user.uid)) {
+        return loc.t('error_already_member');
+      }
+
+      await groupDoc.reference.update({
+        'members': FieldValue.arrayUnion([user.uid]),
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.t('snack_join_success', params: {'groupName': groupData['name']})),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return null;
+
+    } catch (e) {
+      return loc.t('snack_join_error', params: {'error': e.toString()});
+    }
+  }
+
+  void _showJoinGroupDialog() {
+    final loc = AppLocalizations.of(context);
+    final codeController = TextEditingController();
+    String? errorMessage;
     bool isLoading = false;
 
     showDialog(
@@ -131,9 +169,92 @@ class _HomePageState extends State<HomePage> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text(loc.t('dialog_join_group_title')),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: codeController,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: InputDecoration(
+                      labelText: loc.t('label_insert_code'),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      counterText: "",
+                      errorText: errorMessage,
+                      errorMaxLines: 2,
+                    ),
+                    maxLength: 6,
+                    onChanged: (_) {
+                      if (errorMessage != null) {
+                        setStateDialog(() => errorMessage = null);
+                      }
+                    },
+                  ),
+                ],
               ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () => Navigator.of(context).pop(),
+                  child: Text(loc.t('button_cancel')),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                    setStateDialog(() => errorMessage = null);
+                    final code = codeController.text.trim().toUpperCase();
+
+                    if (code.length != 6) {
+                      setStateDialog(() {
+                        errorMessage = loc.t('validation_code_length');
+                      });
+                      return;
+                    }
+
+                    setStateDialog(() => isLoading = true);
+                    final errorString = await _joinGroupLogic(code);
+
+                    if (context.mounted) {
+                      setStateDialog(() => isLoading = false);
+                      if (errorString == null) {
+                        Navigator.of(context).pop();
+                      } else {
+                        setStateDialog(() {
+                          errorMessage = errorString;
+                        });
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: isLoading
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : Text(loc.t('button_join')),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showCreateGroupDialog() {
+    final loc = AppLocalizations.of(context);
+    final nameController = TextEditingController();
+    final sportController = TextEditingController();
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               title: Text(loc.t('dialog_create_group_title')),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -142,9 +263,7 @@ class _HomePageState extends State<HomePage> {
                     controller: nameController,
                     decoration: InputDecoration(
                       labelText: loc.t('label_team_name'),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -152,9 +271,7 @@ class _HomePageState extends State<HomePage> {
                     controller: sportController,
                     decoration: InputDecoration(
                       labelText: loc.t('label_team_sport'),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ],
@@ -171,28 +288,16 @@ class _HomePageState extends State<HomePage> {
                     if (nameController.text.trim().isEmpty) return;
 
                     setStateDialog(() => isLoading = true);
-
-                    // Chiamata alla funzione di creazione
-                    await _createGroup(
-                      nameController.text.trim(),
-                      sportController.text.trim(),
-                    );
-
+                    await _createGroup(nameController.text.trim(), sportController.text.trim());
                     if (context.mounted) {
-                      Navigator.of(context).pop(); // Chiude il dialog
+                      Navigator.of(context).pop();
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: isLoading
-                      ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                       : Text(loc.t('button_create')),
                 ),
               ],
@@ -227,28 +332,21 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 16),
 
-                // Opzione: CREA GRUPPO
                 ListTile(
                   leading: const Icon(Icons.group_add),
                   title: Text(loc.t('home_groups_create')),
                   onTap: () {
-                    Navigator.of(context).pop(); // Chiude il menu opzioni
-                    _showCreateGroupDialog();    // Apre il dialog di creazione
+                    Navigator.of(context).pop();
+                    _showCreateGroupDialog();
                   },
                 ),
 
-                // Opzione: UNISCITI A GRUPPO
                 ListTile(
                   leading: const Icon(Icons.qr_code),
                   title: Text(loc.t('home_groups_join')),
                   onTap: () {
                     Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(loc.t('home_groups_join_snackbar')),
-                      ),
-                    );
-                    // TODO: vai alla pagina di inserimento codice
+                    _showJoinGroupDialog();
                   },
                 ),
                 const SizedBox(height: 8),
@@ -266,6 +364,10 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+
+  // ----------------------------------------------------------------------
+  // BUILD
+  // ----------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -287,10 +389,10 @@ class _HomePageState extends State<HomePage> {
         controller: _pageController,
         onPageChanged: _onPageChanged,
         children: const [
-          _HomePageContent(), // index 0 (Home)
-          GroupPage(),        // index 1 (Gruppi)
-          MessagesPage(),     // index 2 (Messaggi)
-          PaymentsPage(),     // index 3 (Pagamenti)
+          _HomeTimelineContent(), // Index 0: Agenda
+          GroupPage(),            // Index 1: Gruppi
+          MessagesPage(),         // Index 2: Messaggi
+          PaymentsPage(),         // Index 3: Pagamenti
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -300,11 +402,11 @@ class _HomePageState extends State<HomePage> {
         unselectedItemColor: Colors.grey,
         showSelectedLabels: false,
         showUnselectedLabels: false,
-        type: BottomNavigationBarType.fixed, // Impedisce ai pulsanti di muoversi se sono più di 3
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
+            icon: Icon(Icons.calendar_today_outlined),
+            activeIcon: Icon(Icons.calendar_today),
             label: '',
           ),
           BottomNavigationBarItem(
@@ -324,8 +426,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-
-      // FAB SOLO NELLA SEZIONE GRUPPO (index 1)
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: _currentIndex == 1
           ? FloatingActionButton(
@@ -337,23 +437,313 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _HomePageContent extends StatelessWidget {
-  const _HomePageContent();
+// ----------------------------------------------------------------------
+// WIDGET AGENDA / TIMELINE
+// ----------------------------------------------------------------------
+
+class _HomeTimelineContent extends StatelessWidget {
+  const _HomeTimelineContent();
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final user = FirebaseAuth.instance.currentUser;
     final loc = AppLocalizations.of(context);
+    final colors = Theme.of(context).colorScheme;
 
-    return Center(
+    if (user == null) return const SizedBox();
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('groups')
+          .where('members', arrayContains: user.uid)
+          .snapshots(),
+      builder: (context, groupsSnapshot) {
+        if (groupsSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!groupsSnapshot.hasData || groupsSnapshot.data!.docs.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.event_busy, size: 80, color: Colors.grey.shade300),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    loc.t('home_no_groups'),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final Map<String, String> groupNames = {};
+        final List<String> groupIds = [];
+
+        for (var doc in groupsSnapshot.data!.docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          groupNames[doc.id] = data['name'] ?? 'Gruppo';
+          groupIds.add(doc.id);
+        }
+
+        final safeGroupIds = groupIds.take(10).toList();
+
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('events')
+              .where('groupId', whereIn: safeGroupIds)
+              .where('startDateTime', isGreaterThanOrEqualTo: Timestamp.now())
+              .orderBy('startDateTime', descending: false)
+              .limit(50)
+              .snapshots(),
+          builder: (context, eventsSnapshot) {
+            if (eventsSnapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (!eventsSnapshot.hasData || eventsSnapshot.data!.docs.isEmpty) {
+              return Center(
+                child: Text(
+                  loc.t('home_no_events'),
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                ),
+              );
+            }
+
+            final groupedEvents = _groupEventsByDay(eventsSnapshot.data!.docs);
+
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: groupedEvents.keys.length + 1,
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      loc.t('home_upcoming_events'),
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                }
+
+                final dateKey = groupedEvents.keys.elementAt(index - 1);
+                final eventsForDay = groupedEvents[dateKey]!;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _DateHeader(date: dateKey, loc: loc),
+                    const SizedBox(height: 8),
+                    ...eventsForDay.map((eventDoc) {
+                      final eventData = eventDoc.data() as Map<String, dynamic>;
+                      final groupId = eventData['groupId'];
+                      final groupName = groupNames[groupId] ?? 'Gruppo';
+
+                      return _HomeEventCard(
+                        eventId: eventDoc.id,
+                        event: eventData,
+                        groupName: groupName,
+                        colors: colors,
+                      );
+                    }),
+                    const SizedBox(height: 24),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Map<DateTime, List<QueryDocumentSnapshot>> _groupEventsByDay(List<QueryDocumentSnapshot> docs) {
+    final Map<DateTime, List<QueryDocumentSnapshot>> grouped = {};
+    for (var doc in docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      final Timestamp? ts = data['startDateTime'];
+      if (ts == null) continue;
+      final date = ts.toDate();
+      final dayKey = DateTime(date.year, date.month, date.day);
+      if (!grouped.containsKey(dayKey)) {
+        grouped[dayKey] = [];
+      }
+      grouped[dayKey]!.add(doc);
+    }
+    return grouped;
+  }
+}
+
+// 🔥 HEADER DATA CORRETTO (USA LE TRADUZIONI)
+class _DateHeader extends StatelessWidget {
+  final DateTime date;
+  final AppLocalizations loc;
+
+  const _DateHeader({required this.date, required this.loc});
+
+  // Funzione sicura per confrontare i giorni ignorando l'ora
+  bool isSameDay(DateTime d1, DateTime d2) {
+    return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final tomorrow = now.add(const Duration(days: 1));
+
+    String label;
+    final localeCode = loc.locale.languageCode;
+
+    if (isSameDay(date, now)) {
+      label = loc.t('label_today'); // 👈 TRADOTTO
+    } else if (isSameDay(date, tomorrow)) {
+      label = loc.t('label_tomorrow'); // 👈 TRADOTTO
+    } else {
+      label = DateFormat('EEEE d MMMM', localeCode).format(date);
+      label = label[0].toUpperCase() + label.substring(1);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 4),
       child: Text(
-        loc.t('home_message'),
-        textAlign: TextAlign.center,
+        label,
         style: TextStyle(
-          fontSize: 18,
-          color: colors.onSurface,
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.primary,
+          letterSpacing: 0.5,
         ),
       ),
     );
+  }
+}
+
+class _HomeEventCard extends StatelessWidget {
+  final String eventId;
+  final Map<String, dynamic> event;
+  final String groupName;
+  final ColorScheme colors;
+
+  const _HomeEventCard({
+    required this.eventId,
+    required this.event,
+    required this.groupName,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final timestamp = event['startDateTime'] as Timestamp?;
+    final DateTime? date = timestamp?.toDate();
+    final timeStr = date != null ? DateFormat.Hm().format(date) : "--:--";
+
+    final matchType = event['matchType'] ?? 'friendly';
+    String title = "Evento";
+
+    if (matchType == 'tournament') {
+      title = "Torneo";
+    } else {
+      title = "${event['homeTeam'] ?? '?'} vs ${event['awayTeam'] ?? '?'}";
+    }
+
+    return Card(
+      elevation: 0,
+      color: colors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      margin: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EventDetailsPage(
+                eventId: eventId,
+                isAdmin: false,
+              ),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Column(
+                children: [
+                  Text(
+                    timeStr,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: colors.onSurface
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 16),
+              Container(
+                width: 4,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: _getEventColor(matchType),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      groupName.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: colors.primary.withOpacity(0.8),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (event['location'] != null)
+                      Text(
+                        event['location'],
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getEventColor(String type) {
+    switch (type) {
+      case 'home': return Colors.blue;
+      case 'away': return Colors.orange;
+      case 'tournament': return Colors.amber;
+      default: return Colors.green;
+    }
   }
 }
