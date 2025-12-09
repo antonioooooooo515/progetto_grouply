@@ -12,56 +12,26 @@ import 'pagine/home_page.dart';
 import 'pagine/settings_page.dart';
 import 'pagine/profile_settings_page.dart';
 
-// 1. Chiave Globale per controllare la navigazione da fuori il contesto
+// Chiave Globale per controllare la navigazione (la manteniamo, è utile)
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-// 2. Trasformato in StatefulWidget per usare WidgetsBindingObserver
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
-
-  @override
-  void initState() {
-    super.initState();
-    // 3. Iniziamo ad ascoltare lo stato dell'app
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  // 4. Questa funzione scatta quando l'app viene minimizzata o riaperta
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Se l'app torna in primo piano (Resumed)
-    if (state == AppLifecycleState.resumed) {
-      // 🔥 FORZA IL RITORNO ALLA SPLASH SCREEN
-      // (route) => false rimuove tutte le pagine precedenti dallo stack
-      navigatorKey.currentState?.pushNamedAndRemoveUntil('/', (route) => false);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // 1. Ascolta i cambiamenti di LINGUA
     return ValueListenableBuilder<Locale>(
       valueListenable: AppLanguage.locale,
       builder: (context, locale, _) {
+
+        // 2. Ascolta i cambiamenti di TEMA
         return ValueListenableBuilder<ThemeMode>(
           valueListenable: AppTheme.themeMode,
           builder: (context, themeMode, _) {
 
             return MaterialApp(
-              // 5. Colleghiamo la chiave globale al navigatore
               navigatorKey: navigatorKey,
-
               debugShowCheckedModeBanner: false,
               title: 'Grouply - Team Manager',
 
@@ -117,7 +87,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 ),
               ),
 
-              // --- ROUTES ---
+              // --- ROTTE ---
+              // La SplashPage parte SOLO all'avvio dell'app (cold start)
+              // Quando l'app va in background e torna su, Android/iOS mantengono l'ultima schermata.
               initialRoute: '/',
 
               routes: {

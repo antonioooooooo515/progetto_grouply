@@ -6,11 +6,13 @@ import '../localization/app_localizations.dart';
 class EventDetailsPage extends StatefulWidget {
   final String eventId;
   final bool isAdmin;
+  final String groupSport; // 👈 NUOVO: Serve per l'icona dinamica
 
   const EventDetailsPage({
     super.key,
     required this.eventId,
     required this.isAdmin,
+    this.groupSport = '', // Opzionale, default vuoto
   });
 
   @override
@@ -18,20 +20,31 @@ class EventDetailsPage extends StatefulWidget {
 }
 
 class _EventDetailsPageState extends State<EventDetailsPage> {
-  // Variabile locale per l'Optimistic UI (cambio colore immediato)
   String? _localStatus;
+
+  // Funzione icona dinamica
+  IconData _getSportIcon(String sportName) {
+    final s = sportName.toLowerCase();
+    if (s.contains('pallavolo') || s.contains('volley')) return Icons.sports_volleyball;
+    if (s.contains('basket') || s.contains('pallacanestro')) return Icons.sports_basketball;
+    if (s.contains('tennis')) return Icons.sports_tennis;
+    if (s.contains('rugby')) return Icons.sports_rugby;
+    if (s.contains('football')) return Icons.sports_football;
+    if (s.contains('golf')) return Icons.sports_golf;
+    if (s.contains('baseball')) return Icons.sports_baseball;
+    if (s.contains('pallamano')) return Icons.sports_handball;
+    return Icons.sports_soccer;
+  }
 
   Future<void> _updateStatus(String status) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    // 1. Aggiorno subito la UI
     setState(() {
       _localStatus = status;
     });
 
     try {
-      // 2. Poi aggiorno il database
       await FirebaseFirestore.instance.collection('events').doc(widget.eventId).set({
         'participants': {
           user.uid: status,
@@ -79,13 +92,11 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
         final eventData = snapshot.data!.data() as Map<String, dynamic>;
 
-        // Estrazione Dati
         final Timestamp? ts = eventData['startDateTime'];
         final DateTime date = ts?.toDate() ?? DateTime.now();
         final String timeStr = "${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
         final String dateStr = "${date.day}/${date.month}/${date.year}";
 
-        // Estrazione Orario Ritrovo
         String meetingTimeStr = "";
         if (eventData['meetingDateTime'] != null) {
           final DateTime mt = (eventData['meetingDateTime'] as Timestamp).toDate();
@@ -93,14 +104,39 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         }
 
         final String matchType = eventData['matchType'] ?? 'friendly';
-        final String title = matchType == 'tournament'
-            ? "Torneo"
-            : "${eventData['homeTeam'] ?? '?'} vs ${eventData['awayTeam'] ?? '?'}";
-
         final String location = eventData['location'] ?? '-';
         final String meetingPoint = eventData['meetingPoint'] ?? '-';
 
-        // Logica Presenza
+        // 🔥 LOGICA TITOLO E ICONA (Uguale alla Dashboard)
+        final String? customTitle = eventData['title'];
+        String title = "Evento";
+        IconData headerIcon = Icons.event;
+        Color headerColor = colors.primary;
+
+        if (customTitle != null && customTitle.isNotEmpty) {
+          // Evento custom (Allenamento)
+          title = customTitle;
+          headerIcon = Icons.fitness_center;
+          headerColor = Colors.teal;
+        } else if (matchType == 'home') {
+          title = "${eventData['homeTeam']} vs ${eventData['awayTeam']}";
+          headerIcon = Icons.home;
+          headerColor = Colors.blue;
+        } else if (matchType == 'away') {
+          title = "${eventData['homeTeam']} vs ${eventData['awayTeam']}";
+          headerIcon = Icons.directions_bus;
+          headerColor = Colors.orange;
+        } else if (matchType == 'tournament') {
+          title = "Torneo";
+          headerIcon = Icons.emoji_events;
+          headerColor = Colors.amber;
+        } else {
+          // Fallback (Amichevole) con icona sport
+          title = "${eventData['homeTeam'] ?? '?'} vs ${eventData['awayTeam'] ?? '?'}";
+          headerIcon = _getSportIcon(widget.groupSport);
+          headerColor = Colors.green;
+        }
+
         final Map<String, dynamic> participants = eventData['participants'] as Map<String, dynamic>? ?? {};
         final String serverStatus = participants[user?.uid] ?? 'pending';
         final String myStatus = _localStatus ?? serverStatus;
@@ -121,9 +157,19 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 1. HEADER CON ICONA GRANDE E TITOLO
                 Center(
                   child: Column(
                     children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: headerColor.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(headerIcon, size: 48, color: headerColor),
+                      ),
+                      const SizedBox(height: 16),
                       Text(
                         title,
                         style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -132,7 +178,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                       const SizedBox(height: 8),
                       Chip(
                         label: Text("$dateStr  •  $timeStr"),
-                        backgroundColor: colors.primary.withOpacity(0.1),
+                        backgroundColor: colors.primary.withOpacity(0.05),
                         labelStyle: TextStyle(color: colors.primary, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -140,14 +186,15 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 ),
                 const SizedBox(height: 32),
 
-                // 1. Luogo Partita
-                _buildDetailRow(context, Icons.location_on, loc.t('label_match_location'), location),
-                const SizedBox(height: 16),
+                // 2. DETTAGLI
+                _buildDetailRow(context, Icons.location_on, loc.t('label_location'), location), // 👈 Usa label generica
 
-                // 2. Luogo Ritrovo
-                _buildDetailRow(context, Icons.place, loc.t('label_meeting_point'), meetingPoint),
+                // Mostra ritrovo solo se c'è
+                if (meetingPoint != '-' && meetingPoint.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  _buildDetailRow(context, Icons.place, loc.t('label_meeting_point'), meetingPoint),
+                ],
 
-                // 🔥 3. Orario Ritrovo (SU UNA RIGA SEPARATA)
                 if (meetingTimeStr.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   _buildDetailRow(context, Icons.access_time, loc.t('label_meeting_time'), meetingTimeStr),
@@ -155,7 +202,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
                 const SizedBox(height: 40),
 
-                // Sezione Presenza
+                // 3. PRESENZA
                 Text(
                   loc.t('status_title'),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colors.onSurface),

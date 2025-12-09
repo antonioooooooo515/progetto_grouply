@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../localization/app_localizations.dart';
 
-// 👇 Importa la nuova pagina dashboard
+// 👇 Importa la dashboard
 import 'group_dashboard_page.dart';
 
 class GroupPage extends StatelessWidget {
@@ -79,8 +79,10 @@ class GroupPage extends StatelessWidget {
 
               final groupName = groupData['name'] ?? 'Gruppo';
               final sport = groupData['sport'] ?? '';
+              final inviteCode = groupData['inviteCode'] ?? '???'; // 👈 PRENDIAMO IL CODICE CORTO
               final members = groupData['members'] as List<dynamic>? ?? [];
               final memberCount = members.length;
+              final adminId = groupData['adminId'] ?? '';
 
               return Card(
                 elevation: 2,
@@ -91,13 +93,16 @@ class GroupPage extends StatelessWidget {
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: () {
-                    // 👇 NAVIGAZIONE ALLA DASHBOARD DEL GRUPPO
+                    // 👇 CORREZIONE: Passiamo inviteCode!
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => GroupDashboardPage(
                           groupId: groupDoc.id,
-                          groupData: groupData,
+                          groupName: groupName,
+                          groupSport: sport,
+                          adminId: adminId,
+                          inviteCode: inviteCode, // 👈 ECCOLO!
                         ),
                       ),
                     );
@@ -106,7 +111,6 @@ class GroupPage extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        // AVATAR GRUPPO
                         Container(
                           width: 60,
                           height: 60,
@@ -129,7 +133,6 @@ class GroupPage extends StatelessWidget {
                         ),
                         const SizedBox(width: 16),
 
-                        // INFO TESTUALI
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

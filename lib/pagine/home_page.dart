@@ -1,8 +1,9 @@
 import 'dart:math';
+import 'dart:convert'; // Per decodificare le immagini
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart'; // Per le date
+import 'package:intl/intl.dart';
 
 import 'group_page.dart';
 import 'messages_page.dart';
@@ -17,19 +18,23 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late final PageController _pageController;
+  late final TabController _homeTabController;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
+    // 3 Tabs: Eventi, Post, Sondaggi
+    _homeTabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _homeTabController.dispose();
     super.dispose();
   }
 
@@ -54,7 +59,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.pushNamed(context, '/settings');
   }
 
-  // --- LOGICA GRUPPI ---
+  // --- LOGICA GRUPPI (CREAZIONE/UNIONE) ---
 
   String _generateInviteCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -100,12 +105,7 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              loc.t('snack_create_error', params: {'error': e.toString()}),
-            ),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text("Errore: $e"), backgroundColor: Colors.red),
         );
       }
     }
@@ -145,7 +145,6 @@ class _HomePageState extends State<HomePage> {
           SnackBar(
             content: Text(loc.t('snack_join_success', params: {'groupName': groupData['name']})),
             backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -325,13 +324,9 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Text(
                   loc.t('home_groups_dialog_title'),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 16),
-
                 ListTile(
                   leading: const Icon(Icons.group_add),
                   title: Text(loc.t('home_groups_create')),
@@ -340,7 +335,6 @@ class _HomePageState extends State<HomePage> {
                     _showCreateGroupDialog();
                   },
                 ),
-
                 ListTile(
                   leading: const Icon(Icons.qr_code),
                   title: Text(loc.t('home_groups_join')),
@@ -365,67 +359,88 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ----------------------------------------------------------------------
-  // BUILD
-  // ----------------------------------------------------------------------
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         elevation: 0,
-        title: null,
-        leading: null,
+        titleSpacing: 0,
+
+        // TAB BAR HOME (Centrata e Ovale)
+        title: _currentIndex == 0
+            ? TabBar(
+          controller: _homeTabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          splashBorderRadius: BorderRadius.circular(50),
+          labelPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          labelColor: colors.primary,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: colors.primary,
+          indicatorSize: TabBarIndicatorSize.label,
+          dividerColor: Colors.transparent,
+          labelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+          unselectedLabelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+          tabs: [
+            Tab(text: loc.t('home_tab_events')),
+            Tab(text: loc.t('home_tab_posts')),
+            Tab(text: loc.t('home_tab_polls')),
+          ],
+        )
+            : null,
         actions: [
           IconButton(
             iconSize: 32,
             icon: const Icon(Icons.settings_outlined),
             onPressed: _openSettings,
           ),
+          const SizedBox(width: 16),
         ],
       ),
       body: PageView(
         controller: _pageController,
         onPageChanged: _onPageChanged,
-        children: const [
-          _HomeTimelineContent(), // Index 0: Agenda
-          GroupPage(),            // Index 1: Gruppi
-          MessagesPage(),         // Index 2: Messaggi
-          PaymentsPage(),         // Index 3: Pagamenti
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          // HOME TAB VIEW
+          TabBarView(
+            controller: _homeTabController,
+            children: [
+              const _HomeTimelineContent(), // EVENTI
+              const _HomePostsContent(),    // 🔥 POSTS (Lista Aggregata)
+              Center(child: Text(loc.t('home_no_polls'), style: TextStyle(color: Colors.grey))), // SONDAGGI (Placeholder)
+            ],
+          ),
+
+          GroupPage(),
+          MessagesPage(),
+          PaymentsPage(),
         ],
       ),
+
+      // 🔥 NAVBAR CORRETTA (ICONE CENTRATE)
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onNavTapped,
         selectedItemColor: const Color(0xFFE91E63),
         unselectedItemColor: Colors.grey,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,
+        showSelectedLabels: false,   // 👈 NASCONDE LABELS -> ICONE CENTRATE
+        showUnselectedLabels: false, // 👈 NASCONDE LABELS -> ICONE CENTRATE
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            activeIcon: Icon(Icons.calendar_today),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.groups_outlined),
-            activeIcon: Icon(Icons.groups),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.payments_outlined),
-            activeIcon: Icon(Icons.payments),
-            label: '',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), activeIcon: Icon(Icons.calendar_today), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.groups_outlined), activeIcon: Icon(Icons.groups), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), activeIcon: Icon(Icons.chat_bubble), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.payments_outlined), activeIcon: Icon(Icons.payments), label: ''),
         ],
       ),
+
+      // FAB solo per la pagina Gruppi (Index 1)
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: _currentIndex == 1
           ? FloatingActionButton(
@@ -438,7 +453,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 // ----------------------------------------------------------------------
-// WIDGET AGENDA / TIMELINE
+// WIDGET AGENDA / TIMELINE (EVENTI)
 // ----------------------------------------------------------------------
 
 class _HomeTimelineContent extends StatelessWidget {
@@ -448,7 +463,6 @@ class _HomeTimelineContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final loc = AppLocalizations.of(context);
-    final colors = Theme.of(context).colorScheme;
 
     if (user == null) return const SizedBox();
 
@@ -458,29 +472,7 @@ class _HomeTimelineContent extends StatelessWidget {
           .where('members', arrayContains: user.uid)
           .snapshots(),
       builder: (context, groupsSnapshot) {
-        if (groupsSnapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (!groupsSnapshot.hasData || groupsSnapshot.data!.docs.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.event_busy, size: 80, color: Colors.grey.shade300),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Text(
-                    loc.t('home_no_groups'),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
+        if (!groupsSnapshot.hasData) return const Center(child: CircularProgressIndicator());
 
         final Map<String, String> groupNames = {};
         final List<String> groupIds = [];
@@ -489,6 +481,10 @@ class _HomeTimelineContent extends StatelessWidget {
           final data = doc.data() as Map<String, dynamic>;
           groupNames[doc.id] = data['name'] ?? 'Gruppo';
           groupIds.add(doc.id);
+        }
+
+        if (groupIds.isEmpty) {
+          return Center(child: Text(loc.t('home_no_groups'), textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade600)));
         }
 
         final safeGroupIds = groupIds.take(10).toList();
@@ -502,36 +498,16 @@ class _HomeTimelineContent extends StatelessWidget {
               .limit(50)
               .snapshots(),
           builder: (context, eventsSnapshot) {
-            if (eventsSnapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (!eventsSnapshot.hasData || eventsSnapshot.data!.docs.isEmpty) {
-              return Center(
-                child: Text(
-                  loc.t('home_no_events'),
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
-                ),
-              );
-            }
+            if (!eventsSnapshot.hasData) return const Center(child: CircularProgressIndicator());
+            if (eventsSnapshot.data!.docs.isEmpty) return Center(child: Text(loc.t('home_no_events'), style: TextStyle(color: Colors.grey.shade600)));
 
             final groupedEvents = _groupEventsByDay(eventsSnapshot.data!.docs);
 
             return ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: groupedEvents.keys.length + 1,
+              itemCount: groupedEvents.keys.length,
               itemBuilder: (context, index) {
-                if (index == 0) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: Text(
-                      loc.t('home_upcoming_events'),
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                  );
-                }
-
-                final dateKey = groupedEvents.keys.elementAt(index - 1);
+                final dateKey = groupedEvents.keys.elementAt(index);
                 final eventsForDay = groupedEvents[dateKey]!;
 
                 return Column(
@@ -548,7 +524,7 @@ class _HomeTimelineContent extends StatelessWidget {
                         eventId: eventDoc.id,
                         event: eventData,
                         groupName: groupName,
-                        colors: colors,
+                        colors: Theme.of(context).colorScheme,
                       );
                     }),
                     const SizedBox(height: 24),
@@ -579,14 +555,221 @@ class _HomeTimelineContent extends StatelessWidget {
   }
 }
 
-// 🔥 HEADER DATA CORRETTO (USA LE TRADUZIONI)
+// ----------------------------------------------------------------------
+// 🔥 WIDGET LISTA POST (AGGIORNATO CON CANCELLAZIONE)
+// ----------------------------------------------------------------------
+
+class _HomePostsContent extends StatelessWidget {
+  const _HomePostsContent();
+
+  Future<void> _deletePost(BuildContext context, String postId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Elimina Post"),
+        content: const Text("Vuoi davvero eliminare questo post?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Annulla")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Elimina", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Post eliminato.")));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final loc = AppLocalizations.of(context);
+
+    if (user == null) return const SizedBox();
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('groups')
+          .where('members', arrayContains: user.uid)
+          .snapshots(),
+      builder: (context, groupsSnapshot) {
+        if (!groupsSnapshot.hasData) return const Center(child: CircularProgressIndicator());
+
+        final List<String> groupIds = groupsSnapshot.data!.docs.map((d) => d.id).toList();
+        final safeGroupIds = groupIds.take(10).toList();
+
+        if (safeGroupIds.isEmpty) {
+          return Center(child: Text(loc.t('home_no_groups')));
+        }
+
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('posts')
+              .where('groupId', whereIn: safeGroupIds)
+              .orderBy('createdAt', descending: true)
+              .snapshots(),
+          builder: (context, postsSnapshot) {
+            if (postsSnapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+            if (!postsSnapshot.hasData || postsSnapshot.data!.docs.isEmpty) return Center(child: Text(loc.t('home_no_posts')));
+
+            final posts = postsSnapshot.data!.docs;
+
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: posts.length,
+              itemBuilder: (context, index) {
+                final postDoc = posts[index];
+                final postData = postDoc.data() as Map<String, dynamic>;
+
+                // 🔥 LOGICA CANCELLAZIONE HOME: Solo se sono l'autore
+                final canDelete = postData['authorId'] == user.uid;
+
+                return _PostCard(
+                  postData: postData,
+                  canDelete: canDelete,
+                  onDelete: () => _deletePost(context, postDoc.id),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// ----------------------------------------------------------------------
+// WIDGET CARD POST (CON MENU CANCELLAZIONE)
+// ----------------------------------------------------------------------
+
+class _PostCard extends StatelessWidget {
+  final Map<String, dynamic> postData;
+  final bool canDelete;
+  final VoidCallback onDelete;
+
+  const _PostCard({
+    required this.postData,
+    required this.canDelete,
+    required this.onDelete
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final String title = postData['title'] ?? 'Senza titolo';
+    final String desc = postData['description'] ?? '';
+    final String groupName = postData['groupName'] ?? 'Gruppo';
+    final Timestamp? ts = postData['createdAt'];
+    final String dateStr = ts != null
+        ? DateFormat('dd MMM HH:mm').format(ts.toDate())
+        : '';
+
+    final String? imageBase64 = postData['imageBase64'];
+    final String? fileName = postData['fileName'];
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(groupName.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+                    Text(dateStr, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  ],
+                ),
+
+                // 🔥 MENU 3 PUNTINI (SOLO SE SEI AUTORE DEL POST)
+                if (canDelete)
+                  SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: PopupMenuButton<String>(
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.more_horiz, color: Colors.grey),
+                      onSelected: (value) {
+                        if (value == 'delete') onDelete();
+                      },
+                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                        const PopupMenuItem<String>(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text('Elimina post', style: TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // Titolo
+            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+
+            // Descrizione
+            Text(desc, style: const TextStyle(fontSize: 15)),
+            const SizedBox(height: 12),
+
+            // Immagine
+            if (imageBase64 != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.memory(base64Decode(imageBase64), width: double.infinity, height: 200, fit: BoxFit.cover),
+                ),
+              ),
+
+            // Allegato
+            if (fileName != null)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade300)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.description, color: Colors.red),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(fileName, style: const TextStyle(fontWeight: FontWeight.bold))),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------------------------
+// WIDGET DATA & EVENT CARD (PER AGENDA)
+// ----------------------------------------------------------------------
+
 class _DateHeader extends StatelessWidget {
   final DateTime date;
   final AppLocalizations loc;
 
   const _DateHeader({required this.date, required this.loc});
 
-  // Funzione sicura per confrontare i giorni ignorando l'ora
   bool isSameDay(DateTime d1, DateTime d2) {
     return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
   }
@@ -600,9 +783,9 @@ class _DateHeader extends StatelessWidget {
     final localeCode = loc.locale.languageCode;
 
     if (isSameDay(date, now)) {
-      label = loc.t('label_today'); // 👈 TRADOTTO
+      label = loc.t('label_today');
     } else if (isSameDay(date, tomorrow)) {
-      label = loc.t('label_tomorrow'); // 👈 TRADOTTO
+      label = loc.t('label_tomorrow');
     } else {
       label = DateFormat('EEEE d MMMM', localeCode).format(date);
       label = label[0].toUpperCase() + label.substring(1);
@@ -643,10 +826,23 @@ class _HomeEventCard extends StatelessWidget {
     final timeStr = date != null ? DateFormat.Hm().format(date) : "--:--";
 
     final matchType = event['matchType'] ?? 'friendly';
-    String title = "Evento";
+    final String? customTitle = event['title'];
 
-    if (matchType == 'tournament') {
+    String title = "Evento";
+    Color lineColor = Colors.green;
+
+    if (customTitle != null && customTitle.isNotEmpty) {
+      title = customTitle;
+      lineColor = Colors.teal;
+    } else if (matchType == 'home') {
+      title = "${event['homeTeam']} vs ${event['awayTeam']}";
+      lineColor = Colors.blue;
+    } else if (matchType == 'away') {
+      title = "${event['homeTeam']} vs ${event['awayTeam']}";
+      lineColor = Colors.orange;
+    } else if (matchType == 'tournament') {
       title = "Torneo";
+      lineColor = Colors.amber;
     } else {
       title = "${event['homeTeam'] ?? '?'} vs ${event['awayTeam'] ?? '?'}";
     }
@@ -654,10 +850,7 @@ class _HomeEventCard extends StatelessWidget {
     return Card(
       elevation: 0,
       color: colors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.grey.shade200)),
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -678,56 +871,21 @@ class _HomeEventCard extends StatelessWidget {
             children: [
               Column(
                 children: [
-                  Text(
-                    timeStr,
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: colors.onSurface
-                    ),
-                  ),
+                  Text(timeStr, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: colors.onSurface)),
                 ],
               ),
               const SizedBox(width: 16),
-              Container(
-                width: 4,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: _getEventColor(matchType),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+              Container(width: 4, height: 40, decoration: BoxDecoration(color: lineColor, borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      groupName.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: colors.primary.withOpacity(0.8),
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+                    Text(groupName.toUpperCase(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: colors.primary.withOpacity(0.8), letterSpacing: 0.5)),
                     const SizedBox(height: 2),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (event['location'] != null)
-                      Text(
-                        event['location'],
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    if (event['location'] != null && event['location'].toString().isNotEmpty)
+                      Text(event['location'], style: TextStyle(fontSize: 13, color: Colors.grey.shade600), maxLines: 1, overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),
@@ -736,14 +894,5 @@ class _HomeEventCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _getEventColor(String type) {
-    switch (type) {
-      case 'home': return Colors.blue;
-      case 'away': return Colors.orange;
-      case 'tournament': return Colors.amber;
-      default: return Colors.green;
-    }
   }
 }

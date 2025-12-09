@@ -21,6 +21,7 @@ dependencies:
 
   # Utility
   image_picker: ^1.0.7
+  file_picker: ^10.3.7
 
   # Date
   intl: ^0.20.2
@@ -29,14 +30,14 @@ dependencies:
   google_sign_in: ^7.2.0
   # Nota: Le dipendenze specifiche (_android, _ios, etc) sono incluse in google_sign_in,
   # ma se le hai messe per risolvere conflitti lasciale pure.
-  google_sign_in_android: ^7.2.6
+  google_sign_in_android: ^7.2.7
   google_sign_in_ios: ^6.2.4
   google_sign_in_web: ^1.1.0
   google_sign_in_platform_interface: ^3.1.0
   google_identity_services_web: ^0.3.3+1
 
   # Map & Location
-  flutter_map: ^6.1.0
+  flutter_map: ^8.2.2
   latlong2: ^0.9.0
   http: ^1.2.0
   # geocoding: ^2.1.1 # Disabilitato per usare Nominatim (HTTP) su emulatore
@@ -48,7 +49,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.4
 
   # 👇 AGGIUNTO PER LA SPLASH SCREEN
   flutter_native_splash: ^2.3.10

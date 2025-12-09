@@ -32,8 +32,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   bool _isSaving = false;            // sta salvando il profilo
   bool _isUploadingImage = false;    // sta caricando la foto
 
-  // Nota: I valori dei mesi restano in italiano per coerenza col database,
-  // ma l'interfaccia attorno sarà tradotta.
   final List<String> _months = const [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
     'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
@@ -81,7 +79,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         _yearController.text =
         data['birthYear'] != null ? data['birthYear'].toString() : '';
 
-        // Controllo se il valore salvato esiste nella lista, altrimenti null
         String? savedMonth = data['birthMonth'] as String?;
         if (_months.contains(savedMonth)) {
           _selectedMonth = savedMonth;
@@ -97,7 +94,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         _profileImageBase64 = data['profileImageBase64'] as String?;
       }
     } catch (e) {
-      // Errore silenzioso o log
       debugPrint("Errore caricamento profilo: $e");
     } finally {
       if (mounted) {
@@ -128,6 +124,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     );
   }
 
+  // --- MODIFICATA PER GESTIRE IL LIMITE FIREBASE ---
   Future<void> _changePhoto() async {
     final loc = AppLocalizations.of(context);
 
@@ -145,17 +142,28 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
       final picker = ImagePicker();
       final picked = await picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 600,
-        imageQuality: 80,
+        // ⚠️ Riduzione aggressiva per profilo
+        maxWidth: 500,
+        maxHeight: 500,
+        imageQuality: 60,
       );
 
       if (picked == null) return;
+
+      final bytes = await picked.readAsBytes();
+
+      // ⚠️ Controllo dimensione
+      if ((bytes.lengthInBytes / 1024) > 700) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Immagine troppo pesante per Firestore. Riprova.")),
+        );
+        return;
+      }
 
       setState(() {
         _isUploadingImage = true;
       });
 
-      final bytes = await picked.readAsBytes();
       final base64Str = base64Encode(bytes);
 
       setState(() {
@@ -213,7 +221,8 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         'gender': _selectedGender,
         'sport': _sportController.text.trim(),
         'role': _roleController.text.trim(),
-        'profileImageBase64': _profileImageBase64,
+        // L'immagine è già stata salvata da _changePhoto, ma la rimandiamo per sicurezza se presente
+        if (_profileImageBase64 != null) 'profileImageBase64': _profileImageBase64,
         'email': user.email,
         'updatedAt': FieldValue.serverTimestamp(),
       };

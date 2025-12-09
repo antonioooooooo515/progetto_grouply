@@ -20,14 +20,10 @@ class CreateRecurringEventPage extends StatefulWidget {
 }
 
 class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
-  // 🔥 CAMPO NOME EVENTO (Default: "Allenamento")
   late TextEditingController _nameController;
-
-  final TextEditingController _meetingPointController = TextEditingController();
-  final TextEditingController _matchLocationController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
 
   TimeOfDay? _selectedTime;
-  TimeOfDay? _selectedMeetingTime;
   DateTime? _selectedDate;
 
   String? _selectedRecurrence; // 'daily', 'weekly', 'monthly'
@@ -37,14 +33,12 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
   @override
   void initState() {
     super.initState();
-    // Inizializza il controller nel didChangeDependencies per avere accesso alle localizzazioni
     _nameController = TextEditingController();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Imposta il testo di default solo se è vuoto (prima volta)
     if (_nameController.text.isEmpty) {
       _nameController.text = AppLocalizations.of(context).t('default_event_training');
     }
@@ -53,8 +47,7 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
   @override
   void dispose() {
     _nameController.dispose();
-    _meetingPointController.dispose();
-    _matchLocationController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
@@ -99,22 +92,7 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
     }
   }
 
-  Future<void> _pickMeetingTime() async {
-    final now = TimeOfDay.now();
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: now,
-      builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-        child: child!,
-      ),
-    );
-    if (picked != null) {
-      setState(() => _selectedMeetingTime = picked);
-    }
-  }
-
-  Future<void> _pickLocation(TextEditingController controller) async {
+  Future<void> _pickLocation() async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -124,7 +102,7 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
 
     if (result != null && result is String) {
       setState(() {
-        controller.text = result;
+        _locationController.text = result;
       });
     }
   }
@@ -166,31 +144,19 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
           _selectedTime!.hour, _selectedTime!.minute,
         );
 
-        Timestamp? meetingTimestamp;
-        if (_selectedMeetingTime != null) {
-          final DateTime meetingDateTime = DateTime(
-            instanceDate.year, instanceDate.month, instanceDate.day,
-            _selectedMeetingTime!.hour, _selectedMeetingTime!.minute,
-          );
-          meetingTimestamp = Timestamp.fromDate(meetingDateTime);
-        }
-
         final docRef = FirebaseFirestore.instance.collection('events').doc();
 
         final eventData = {
           'groupId': widget.groupId,
-          'type': 'training', // 👈 TIPO ALLENAMENTO
-          'title': _nameController.text.trim(), // 👈 SALVIAMO IL NOME
-          'matchType': 'training', // Per compatibilità
+          'type': 'training',
+          'title': _nameController.text.trim(),
+          'matchType': 'training',
           'startDateTime': Timestamp.fromDate(eventDateTime),
-          'meetingDateTime': meetingTimestamp,
-          'meetingPoint': _meetingPointController.text.trim(),
-          'location': _matchLocationController.text.trim(),
+          'location': _locationController.text.trim(), // Unico campo location
           'createdBy': user.uid,
           'createdAt': FieldValue.serverTimestamp(),
           'isRecurring': true,
           'recurrenceType': _selectedRecurrence,
-          // Niente squadre qui
         };
 
         batch.set(docRef, eventData);
@@ -293,67 +259,22 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
             ),
             const SizedBox(height: 16),
 
-            // 3. LUOGHI
+            // 3. LUOGO (Singolo campo)
             TextField(
-              controller: _matchLocationController,
+              controller: _locationController,
               readOnly: true,
-              onTap: () => _pickLocation(_matchLocationController),
+              onTap: _pickLocation,
               decoration: InputDecoration(
-                labelText: loc.t('label_match_location'),
+                labelText: loc.t('label_location'), // Usa la chiave generica
                 hintText: loc.t('map_select_placeholder'),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 prefixIcon: const Icon(Icons.location_on, color: Colors.red),
                 suffixIcon: const Icon(Icons.chevron_right),
               ),
             ),
-            const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: TextField(
-                    controller: _meetingPointController,
-                    readOnly: true,
-                    onTap: () => _pickLocation(_meetingPointController),
-                    decoration: InputDecoration(
-                      labelText: loc.t('label_meeting_point'),
-                      hintText: loc.t('map_select_placeholder'),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      prefixIcon: const Icon(Icons.map, color: Colors.blue),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 1,
-                  child: InkWell(
-                    onTap: _pickMeetingTime,
-                    borderRadius: BorderRadius.circular(12),
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        labelText: loc.t('label_meeting_time'),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        prefixIcon: const Icon(Icons.access_time),
-                      ),
-                      child: Text(
-                        _selectedMeetingTime != null
-                            ? _selectedMeetingTime!.format(context)
-                            : "--:--",
-                        style: TextStyle(
-                          color: _selectedMeetingTime != null ? colors.onSurface : Colors.grey,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
             const SizedBox(height: 32),
 
-            // 🔥 4. RIPETIZIONE (In fondo)
+            // 4. RIPETIZIONE (In fondo)
             DropdownButtonFormField<String>(
               value: _selectedRecurrence,
               decoration: InputDecoration(

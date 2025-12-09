@@ -36,7 +36,7 @@ class GroupDashboardPage extends StatefulWidget {
 class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // --- STATO SELEZIONE ---
+  // STATO SELEZIONE
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
   String? _selectionType; // 'event' oppure 'post'
@@ -63,21 +63,26 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
 
   void _startSelection(String id, String type) {
     final user = FirebaseAuth.instance.currentUser;
+
+    // 🔍 DEBUG: Controlliamo se gli ID coincidono
     final currentUserId = user?.uid ?? '';
-    final isAdmin = currentUserId == widget.adminId;
+    final groupAdminId = widget.adminId;
+    final isAdmin = currentUserId == groupAdminId;
 
     if (!isAdmin) {
-      HapticFeedback.heavyImpact();
+      // 🔔 AVVISO SE NON SEI ADMIN
+      HapticFeedback.heavyImpact(); // Vibrazione errore
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Solo l'amministratore può eliminare elementi."),
+        SnackBar(
+          content: Text("Solo l'Admin può eliminare.\nTu: ${currentUserId.substring(0, 4)}... Admin: ${groupAdminId.substring(0, 4)}..."),
           backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 4),
         ),
       );
       return;
     }
 
+    // Se sto già selezionando un altro tipo, impedisco la selezione mista
     if (_selectionType != null && _selectionType != type) return;
 
     setState(() {
@@ -86,7 +91,8 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
       _selectedIds.add(id);
     });
 
-    HapticFeedback.mediumImpact(); // Vibrazione di conferma
+    // Feedback tattile (vibrazione leggera) di conferma
+    HapticFeedback.mediumImpact();
   }
 
   void _toggleSelection(String id, String type) {
@@ -122,7 +128,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
     final String title = type == 'event' ? loc.t('delete_event_title') : "Elimina post";
     final String content = type == 'event'
         ? loc.t('delete_event_confirm')
-        : "Vuoi eliminare i $count elementi selezionati?";
+        : "Sei sicuro di voler eliminare i post selezionati?";
 
     final confirm = await showDialog<bool>(
       context: context,
@@ -159,13 +165,15 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
     }
   }
 
-  // --- FAB e ALTRE FUNZIONI ---
-
+  // --- MENU FAB ---
   void _showAddOptions(AppLocalizations loc, ColorScheme colors) {
     final String currentSport = widget.groupSport;
+
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
         return SafeArea(
           child: Column(
@@ -268,7 +276,20 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
         ],
       )
           : AppBar(
-        title: Text(widget.groupName),
+        // Feedback visivo nel titolo
+        title: Row(
+          children: [
+            Flexible(child: Text(widget.groupName)),
+            if (isAdmin)
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text(
+                  "(Admin)",
+                  style: TextStyle(fontSize: 12, color: Colors.green, fontWeight: FontWeight.bold),
+                ),
+              ),
+          ],
+        ),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: colors.primary,
@@ -388,9 +409,8 @@ class _GroupBoardContent extends StatelessWidget {
                       final eventDoc = events[index];
                       final eventData = eventDoc.data() as Map<String, dynamic>;
                       final eventId = eventDoc.id;
-
                       final isSelected = selectedIds.contains(eventId);
-                      final canSelect = (selectionType == null || selectionType == 'event');
+                      final isEnabled = (selectionType == null || selectionType == 'event');
 
                       return _EventCard(
                         eventId: eventId,
@@ -401,7 +421,7 @@ class _GroupBoardContent extends StatelessWidget {
                         isSelected: isSelected,
                         onTap: () {
                           if (isSelectionMode) {
-                            if (canSelect) onToggleSelection(eventId, 'event');
+                            if (isEnabled) onToggleSelection(eventId, 'event');
                           } else {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => EventDetailsPage(eventId: eventId, isAdmin: isAdmin)));
                           }
@@ -445,9 +465,8 @@ class _GroupBoardContent extends StatelessWidget {
                   final postDoc = posts[index];
                   final postData = postDoc.data() as Map<String, dynamic>;
                   final postId = postDoc.id;
-
                   final isSelected = selectedIds.contains(postId);
-                  final canSelect = (selectionType == null || selectionType == 'post');
+                  final isEnabled = (selectionType == null || selectionType == 'post');
 
                   return _SelectablePostCard(
                     postData: postData,
@@ -455,9 +474,11 @@ class _GroupBoardContent extends StatelessWidget {
                     isSelected: isSelected,
                     onTap: () {
                       if (isSelectionMode) {
-                        if (canSelect) onToggleSelection(postId, 'post');
+                        if (isEnabled) onToggleSelection(postId, 'post');
                       }
+                      // Qui potresti aprire il dettaglio del post se voluto
                     },
+                    // 🔥 QUI È COLLEGATO IL LONG PRESS
                     onLongPress: () => onStartSelection(postId, 'post'),
                   );
                 },
@@ -473,7 +494,7 @@ class _GroupBoardContent extends StatelessWidget {
 }
 
 // ----------------------------------------------------------------------
-// CARD EVENTO (INKWELL PER ANIMAZIONE)
+// WIDGET CARD EVENTO
 // ----------------------------------------------------------------------
 class _EventCard extends StatelessWidget {
   final String eventId;
@@ -547,25 +568,18 @@ class _EventCard extends StatelessWidget {
       timeStr = "${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
     }
 
-    final cardColor = isSelected ? colors.primaryContainer.withOpacity(0.3) : null;
+    final cardColor = isSelected ? colors.primaryContainer.withOpacity(0.4) : null;
     final borderColor = isSelected ? colors.primary : Colors.transparent;
 
-    // 🔥 USIAMO INKWELL DENTRO LA CARD PER L'EFFETTO "CLICK" (RIPPLE)
-    return Card(
-      elevation: isSelected ? 0 : 2,
-      color: cardColor,
-      margin: const EdgeInsets.only(bottom: 12),
-      clipBehavior: Clip.antiAlias, // Importante per tagliare l'effetto onda
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: borderColor, width: 2),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        onLongPress: onLongPress,
-        // Colore di sfondo quando premuto
-        splashColor: colors.primary.withOpacity(0.2),
-        highlightColor: colors.primary.withOpacity(0.1),
+    // 🔥 USIAMO GESTURE DETECTOR ANCHE QUI PER SICUREZZA
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Card(
+        elevation: isSelected ? 0 : 2,
+        color: cardColor,
+        margin: const EdgeInsets.only(bottom: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: borderColor, width: 2)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -574,10 +588,7 @@ class _EventCard extends StatelessWidget {
               if (isSelectionMode)
                 Padding(
                   padding: const EdgeInsets.only(right: 12),
-                  child: Icon(
-                    isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-                    color: isSelected ? colors.primary : Colors.grey,
-                  ),
+                  child: Icon(isSelected ? Icons.check_circle : Icons.radio_button_unchecked, color: isSelected ? colors.primary : Colors.grey),
                 ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -622,7 +633,7 @@ class _EventCard extends StatelessWidget {
 }
 
 // ----------------------------------------------------------------------
-// CARD POST (INKWELL PER ANIMAZIONE)
+// WIDGET CARD POST (Selezionabile - GESTURE DETECTOR FIX)
 // ----------------------------------------------------------------------
 class _SelectablePostCard extends StatelessWidget {
   final Map<String, dynamic> postData;
@@ -649,23 +660,19 @@ class _SelectablePostCard extends StatelessWidget {
     final String? imageBase64 = postData['imageBase64'];
     final String? fileName = postData['fileName'];
 
-    final cardColor = isSelected ? colors.primaryContainer.withOpacity(0.3) : null;
+    final cardColor = isSelected ? colors.primaryContainer.withOpacity(0.4) : null;
     final borderColor = isSelected ? colors.primary : Colors.transparent;
 
-    // 🔥 USIAMO INKWELL ANCHE QUI
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: isSelected ? 0 : 2,
-      color: cardColor,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: borderColor, width: 2),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        onLongPress: onLongPress,
-        splashColor: colors.primary.withOpacity(0.2),
+    // 🔥 FIX: USIAMO GESTURE DETECTOR SOPRA LA CARD PER INTERCETTARE TUTTO
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 16),
+        elevation: isSelected ? 0 : 2,
+        color: cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: borderColor, width: 2)),
+        // Rimuoviamo InkWell qui dentro per evitare conflitti di gesture
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -674,10 +681,7 @@ class _SelectablePostCard extends StatelessWidget {
               if (isSelectionMode)
                 Padding(
                   padding: const EdgeInsets.only(right: 12, top: 4),
-                  child: Icon(
-                    isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-                    color: isSelected ? colors.primary : Colors.grey,
-                  ),
+                  child: Icon(isSelected ? Icons.check_circle : Icons.radio_button_unchecked, color: isSelected ? colors.primary : Colors.grey),
                 ),
               Expanded(
                 child: Column(
