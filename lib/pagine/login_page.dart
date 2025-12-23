@@ -10,6 +10,9 @@ import '../widgets/soft_input.dart';
 import '../widgets/big_button.dart';
 import '../widgets/tiny_text_button.dart';
 
+// ✅ IMPORT DEL SERVICE NOTIFICHE
+import '../services/push_notification_service.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -34,6 +37,30 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  /// ✅ Dopo login OK: inizializza FCM + naviga
+  /// (mostra anche l'errore reale se fallisce, non solo "push_init_failed")
+  Future<void> _afterAuthSuccess() async {
+    final loc = AppLocalizations.of(context);
+
+    try {
+      // Inizializza push + salva token su Firestore
+      await PushNotificationsService.instance.init();
+    } catch (e) {
+      // Non blocchiamo l'accesso se le notifiche falliscono
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("${loc.t('push_init_failed')}: $e"),
+            duration: const Duration(seconds: 6),
+          ),
+        );
+      }
+    }
+
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, '/home');
+  }
+
   Future<void> _onLoginPressed() async {
     final loc = AppLocalizations.of(context);
 
@@ -48,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
+      await _afterAuthSuccess();
     } on FirebaseAuthException catch (e) {
       String message = loc.t('error_login');
 
@@ -60,13 +87,17 @@ class _LoginPageState extends State<LoginPage> {
         message = loc.t('error_invalid_email');
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
     } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.t('error_unexpected_login'))),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.t('error_unexpected_login'))),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -85,30 +116,36 @@ class _LoginPageState extends State<LoginPage> {
       final googleProvider = GoogleAuthProvider();
       googleProvider.setCustomParameters({'prompt': 'select_account'});
 
-      UserCredential credential;
-
       if (kIsWeb) {
-        credential = await FirebaseAuth.instance.signInWithPopup(googleProvider);
+        await FirebaseAuth.instance.signInWithPopup(googleProvider);
       } else {
-        credential = await FirebaseAuth.instance.signInWithProvider(googleProvider);
+        await FirebaseAuth.instance.signInWithProvider(googleProvider);
       }
 
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
+      await _afterAuthSuccess();
     } on FirebaseAuthException catch (e) {
-      String msg = 'Errore durante il login con Google';
+      String msg = loc.t('error_google_login');
+
       if (e.code == 'account-exists-with-different-credential') {
-        msg = 'Esiste già un account con un altro metodo di accesso.';
+        msg = loc.t('error_account_exists_different_credential');
       } else if (e.code == 'invalid-credential') {
-        msg = 'Credenziale Google non valida.';
+        msg = loc.t('error_invalid_google_credential');
       } else if (e.code == 'user-disabled') {
-        msg = 'Questo account è stato disabilitato.';
+        msg = loc.t('error_user_disabled');
       }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Errore Google login: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("${loc.t('error_google_login_generic')}: $e")),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isGoogleLoading = false);
@@ -129,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
         title: Row(
           children: [
             Image.asset(
-              'lib/assets/logo/logo_nobg.png', // Logo senza sfondo
+              'lib/assets/logo/logo_nobg.png',
               height: 40,
               fit: BoxFit.contain,
             ),
@@ -237,35 +274,63 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          Expanded(child: Divider(color: Colors.grey.shade400, thickness: 0.8)),
+                          Expanded(
+                            child: Divider(
+                              color: Colors.grey.shade400,
+                              thickness: 0.8,
+                            ),
+                          ),
                           const SizedBox(width: 8),
-                          Text('oppure', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                          Text(
+                            'oppure',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
+                          ),
                           const SizedBox(width: 8),
-                          Expanded(child: Divider(color: Colors.grey.shade400, thickness: 0.8)),
+                          Expanded(
+                            child: Divider(
+                              color: Colors.grey.shade400,
+                              thickness: 0.8,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),
-
-                      // PULSANTE GOOGLE CON LOGO REALE
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
                           onPressed: _isGoogleLoading ? null : _signInWithGoogle,
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            backgroundColor: Colors.white, // Sfondo bianco per risaltare il logo colorato
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            backgroundColor: Colors.white,
                             side: BorderSide(color: Colors.grey.shade300),
                           ),
                           icon: _isGoogleLoading
-                              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                              ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
                               : Image.asset(
-                            'lib/assets/logo/google_logo.png', // 👈 LOGO REALE
+                            'lib/assets/logo/google_logo.png',
                             height: 24,
                           ),
                           label: Text(
-                            _isGoogleLoading ? 'Accesso con Google...' : loc.t('login_with_google'),
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
+                            _isGoogleLoading
+                                ? loc.t('login_with_google_loading')
+                                : loc.t('login_with_google'),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                       ),

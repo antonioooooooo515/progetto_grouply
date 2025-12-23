@@ -102,7 +102,7 @@ class AppLocalizations {
       'fab_option_post_sub': 'Condividi informazioni, foto e file',
       'fab_option_poll': 'Sondaggio',
       'fab_option_poll_sub': 'Chiedi ai membri la loro opinione',
-      'fab_option_payment': 'Richiesta di pagamento',
+      'fab_option_payment': 'Richieste di pagamento',
       'fab_option_payment_sub': 'Raccogli quote dai membri',
 
       // CREAZIONE EVENTO
@@ -227,6 +227,78 @@ class AppLocalizations {
       'error_invalid_email': 'Email non valida',
       'error_email_in_use': 'Questa email è già registrata',
       'error_weak_password': 'La password è troppo debole',
+
+      //Messaggi
+      'messages_empty_title': 'Nessuna chat',
+      'messages_empty_subtitle': 'Entra in un gruppo per iniziare a chattare.',
+      'chat_empty': 'Nessun messaggio. Scrivi il primo!',
+      'chat_hint': 'Scrivi un messaggio...',
+      'chat_send_error': 'Errore invio: {error}',
+      'chat_error_generic': 'Errore',
+      'chat_no_messages_yet': 'Nessun messaggio ancora',
+      'chat_message_deleted_or_empty': '(messaggio vuoto)',
+
+      //Sondaggi
+      'create_poll_title': 'Crea un sondaggio',
+      'poll_question_label': 'Domanda',
+      'poll_question_hint': 'Es. Chi viene all’allenamento?',
+      'poll_option_label': 'Opzione {number}',
+      'poll_add_option': 'Aggiungi opzione',
+      'poll_remove_option': 'Rimuovi',
+      'poll_publish': 'Pubblica sondaggio',
+      'poll_creating': 'Creazione sondaggio...',
+      'poll_min_options_error': 'Inserisci almeno 2 opzioni',
+      'poll_missing_fields_error': 'Compila domanda e opzioni',
+      'poll_created_success': 'Sondaggio creato con successo!',
+      'poll_allow_multiple': 'Consenti selezioni multiple',
+      'poll_vote_saved': 'Voto salvato',
+      'poll_total_votes': '{count} voti',
+      'poll_multiple_hint': 'puoi selezionare più opzioni',
+      "poll_delete_title": "Elimina sondaggio",
+      "poll_delete_confirm": "Vuoi davvero eliminare questo sondaggio del gruppo {groupName}?",
+      "poll_deleted_success": "Sondaggio eliminato.",
+
+      //Pagamenti
+      'payment_select_people_title': 'Seleziona membri',
+      'payment_select_people_subtitle': 'Scegli le persone a cui inviare la richiesta di pagamento',
+      'payment_select_all': 'Seleziona tutti',
+      'payment_clear_all': 'Deseleziona',
+      'payment_next': 'Avanti',
+
+      'payment_create_title': 'Richiesta di pagamento',
+      'payment_recipients_label': 'Destinatari',
+      'payment_amount_label': 'Importo',
+      'payment_amount_hint': 'Es. 10,00',
+      'payment_note_label': 'Descrizione',
+      'payment_note_hint': 'Es. Quota mensile / Campo / Divise...',
+      'payment_due_date_label': 'Scadenza (opzionale)',
+      'payment_pick_date': 'Scegli data',
+
+      'payment_send_request': 'Invia richiesta',
+      'payment_creating': 'Invio...',
+      'payment_request_created_success': 'Richiesta creata con successo!',
+      'payment_invalid_amount_error': 'Inserisci un importo valido',
+      'payment_missing_fields_error': 'Compila tutti i campi richiesti',
+      'payment_no_recipients_error': 'Seleziona almeno una persona',
+
+      "home_no_payments": "Nessuna richiesta di pagamento.",
+      "payments_for_you_title": "Richieste per te",
+      "payments_created_by_you_title": "Create da te",
+      "payment_default_title": "Richiesta di pagamento",
+      "payment_open_details_placeholder": "Dettagli pagamento in arrivo",
+
+      "payment_status_pending": "In sospeso",
+      "payment_status_paid": "Pagato",
+      "payment_status_partial": "Parziale",
+      "payment_targets_paid_hint": "pagati",
+
+      "label_admin": "Admin",
+      "payment_admin_only_error": "Solo l'amministratore può creare richieste di pagamento.",
+
+      "payment_delete_title": "Elimina richiesta",
+      "payment_delete_confirm": "Vuoi davvero eliminare questa richiesta di pagamento del gruppo \"{groupName}\"?",
+      "payment_deleted_success": "Richiesta di pagamento eliminata.",
+      "button_delete": "Elimina",
     },
 
     // 🇺🇸 ENGLISH
@@ -421,6 +493,78 @@ class AppLocalizations {
       'error_invalid_email': 'Invalid email',
       'error_email_in_use': 'This email is already registered',
       'error_weak_password': 'Password is too weak',
+
+      //Messaggi
+      'messages_empty_title': 'No chats',
+      'messages_empty_subtitle': 'Join a group to start chatting.',
+      'chat_empty': 'No messages yet. Write the first one!',
+      'chat_hint': 'Type a message...',
+      'chat_send_error': 'Send error: {error}',
+      'chat_error_generic': 'Error',
+      'chat_no_messages_yet': 'No messages yet',
+      'chat_message_deleted_or_empty': '(empty message)',
+
+      //Sondaggi
+      'create_poll_title': 'Create poll',
+      'poll_question_label': 'Question',
+      'poll_question_hint': 'E.g. Who is coming to training?',
+      'poll_option_label': 'Option {number}',
+      'poll_add_option': 'Add option',
+      'poll_remove_option': 'Remove',
+      'poll_publish': 'Publish poll',
+      'poll_creating': 'Creating poll...',
+      'poll_min_options_error': 'Enter at least 2 options',
+      'poll_missing_fields_error': 'Fill in question and options',
+      'poll_created_success': 'Poll created successfully!',
+      'poll_allow_multiple': 'Allow multiple choices',
+      'poll_vote_saved': 'Vote saved',
+      'poll_total_votes': '{count} votes',
+      'poll_multiple_hint': 'you can select multiple options',
+      "poll_delete_title": "Delete poll",
+      "poll_delete_confirm": "Do you really want to delete this poll from the group {groupName}?",
+      "poll_deleted_success": "Poll deleted.",
+
+      //Pagamenti
+      'payment_select_people_title': 'Select members',
+      'payment_select_people_subtitle': 'Choose who will receive the payment request',
+      'payment_select_all': 'Select all',
+      'payment_clear_all': 'Clear',
+      'payment_next': 'Next',
+
+      'payment_create_title': 'Payment request',
+      'payment_recipients_label': 'Recipients',
+      'payment_amount_label': 'Amount',
+      'payment_amount_hint': 'e.g. 10.00',
+      'payment_note_label': 'Description',
+      'payment_note_hint': 'e.g. Monthly fee / Field / Jerseys...',
+      'payment_due_date_label': 'Due date (optional)',
+      'payment_pick_date': 'Pick date',
+
+      'payment_send_request': 'Send request',
+      'payment_creating': 'Sending...',
+      'payment_request_created_success': 'Request created successfully!',
+      'payment_invalid_amount_error': 'Enter a valid amount',
+      'payment_missing_fields_error': 'Please fill in all required fields',
+      'payment_no_recipients_error': 'Select at least one person',
+
+      "home_no_payments": "No payment requests.",
+      "payments_for_you_title": "Requests for you",
+      "payments_created_by_you_title": "Created by you",
+      "payment_default_title": "Payment request",
+      "payment_open_details_placeholder": "Payment details coming soon",
+
+      "payment_status_pending": "Pending",
+      "payment_status_paid": "Paid",
+      "payment_status_partial": "Partial",
+      "payment_targets_paid_hint": "paid",
+
+      "label_admin": "Admin",
+      "payment_admin_only_error": "Only the admin can create payment requests.",
+
+      "payment_delete_title": "Delete request",
+      "payment_delete_confirm": "Do you really want to delete this payment request for the group \"{groupName}\"?",
+      "payment_deleted_success": "Payment request deleted.",
+      "button_delete": "Delete",
     },
 
     // 🇪🇸 SPANISH
@@ -615,6 +759,78 @@ class AppLocalizations {
       'error_invalid_email': 'Correo inválido',
       'error_email_in_use': 'Este correo ya está registrado',
       'error_weak_password': 'La contraseña es demasiado débil',
+
+      //Messaggi
+      'messages_empty_title': 'Sin chats',
+      'messages_empty_subtitle': 'Únete a un grupo para empezar a chatear.',
+      'chat_empty': 'Aún no hay mensajes. ¡Escribe el primero!',
+      'chat_hint': 'Escribe un mensaje...',
+      'chat_send_error': 'Error al enviar: {error}',
+      'chat_error_generic': 'Error',
+      'chat_no_messages_yet': 'Aún no hay mensajes',
+      'chat_message_deleted_or_empty': '(mensaje vacío)',
+
+      //Sondaggi
+      'create_poll_title': 'Crear encuesta',
+      'poll_question_label': 'Pregunta',
+      'poll_question_hint': 'Ej. ¿Quién viene al entrenamiento?',
+      'poll_option_label': 'Opción {number}',
+      'poll_add_option': 'Añadir opción',
+      'poll_remove_option': 'Quitar',
+      'poll_publish': 'Publicar encuesta',
+      'poll_creating': 'Creando encuesta...',
+      'poll_min_options_error': 'Introduce al menos 2 opciones',
+      'poll_missing_fields_error': 'Completa la pregunta y las opciones',
+      'poll_created_success': '¡Encuesta creada con éxito!',
+      'poll_allow_multiple': 'Permitir selecciones múltiples',
+      'poll_vote_saved': 'Voto guardado',
+      'poll_total_votes': '{count} votos',
+      'poll_multiple_hint': 'puedes seleccionar varias opciones',
+      "poll_delete_title": "Eliminar encuesta",
+      "poll_delete_confirm": "¿De verdad quieres eliminar esta encuesta del grupo {groupName}?",
+      "poll_deleted_success": "Encuesta eliminada.",
+
+      //Pagamenti
+      'payment_select_people_title': 'Seleccionar miembros',
+      'payment_select_people_subtitle': 'Elige a quién enviar la solicitud de pago',
+      'payment_select_all': 'Seleccionar todo',
+      'payment_clear_all': 'Deseleccionar',
+      'payment_next': 'Siguiente',
+
+      'payment_create_title': 'Solicitud de pago',
+      'payment_recipients_label': 'Destinatarios',
+      'payment_amount_label': 'Importe',
+      'payment_amount_hint': 'Ej. 10,00',
+      'payment_note_label': 'Descripción',
+      'payment_note_hint': 'Ej. Cuota mensual / Campo / Equipación...',
+      'payment_due_date_label': 'Vencimiento (opcional)',
+      'payment_pick_date': 'Elegir fecha',
+
+      'payment_send_request': 'Enviar solicitud',
+      'payment_creating': 'Enviando...',
+      'payment_request_created_success': '¡Solicitud creada con éxito!',
+      'payment_invalid_amount_error': 'Introduce un importe válido',
+      'payment_missing_fields_error': 'Completa todos los campos obligatorios',
+      'payment_no_recipients_error': 'Selecciona al menos una persona',
+
+      "home_no_payments": "No hay solicitudes de pago.",
+      "payments_for_you_title": "Solicitudes para ti",
+      "payments_created_by_you_title": "Creadas por ti",
+      "payment_default_title": "Solicitud de pago",
+      "payment_open_details_placeholder": "Detalles del pago próximamente",
+
+      "payment_status_pending": "Pendiente",
+      "payment_status_paid": "Pagado",
+      "payment_status_partial": "Parcial",
+      "payment_targets_paid_hint": "pagados",
+
+      "label_admin": "Admin",
+      "payment_admin_only_error": "Solo el administrador puede crear solicitudes de pago.",
+
+      "payment_delete_title": "Eliminar solicitud",
+      "payment_delete_confirm": "¿De verdad quieres eliminar esta solicitud de pago del grupo \"{groupName}\"?",
+      "payment_deleted_success": "Solicitud de pago eliminada.",
+      "button_delete": "Eliminar",
     },
 
     // 🇫🇷 FRENCH
@@ -809,6 +1025,78 @@ class AppLocalizations {
       'error_invalid_email': 'Email invalide',
       'error_email_in_use': 'Cet email est déjà enregistré',
       'error_weak_password': 'Mot de passe trop faible',
+
+      //Messaggi
+      'messages_empty_title': 'Aucune discussion',
+      'messages_empty_subtitle': 'Rejoignez un groupe pour commencer à discuter.',
+      'chat_empty': 'Aucun message. Écrivez le premier !',
+      'chat_hint': 'Écrire un message...',
+      'chat_send_error': 'Erreur d’envoi : {error}',
+      'chat_error_generic': 'Erreur',
+      'chat_no_messages_yet': 'Aucun message pour l’instant',
+      'chat_message_deleted_or_empty': '(message vide)',
+
+      //Sondaggi
+      'create_poll_title': 'Créer un sondage',
+      'poll_question_label': 'Question',
+      'poll_question_hint': 'Ex. Qui vient à l’entraînement ?',
+      'poll_option_label': 'Option {number}',
+      'poll_add_option': 'Ajouter une option',
+      'poll_remove_option': 'Retirer',
+      'poll_publish': 'Publier le sondage',
+      'poll_creating': 'Création du sondage...',
+      'poll_min_options_error': 'Ajoutez au moins 2 options',
+      'poll_missing_fields_error': 'Remplissez la question et les options',
+      'poll_created_success': 'Sondage créé avec succès !',
+      'poll_allow_multiple': 'Autoriser plusieurs choix',
+      'poll_vote_saved': 'Vote enregistré',
+      'poll_total_votes': '{count} votes',
+      'poll_multiple_hint': 'vous pouvez sélectionner plusieurs options',
+      "poll_delete_title": "Supprimer le sondage",
+      "poll_delete_confirm": "Voulez-vous vraiment supprimer ce sondage du groupe {groupName} ?",
+      "poll_deleted_success": "Sondage supprimé.",
+
+      //Pagamenti
+      'payment_select_people_title': 'Sélectionner des membres',
+      'payment_select_people_subtitle': 'Choisissez les personnes qui recevront la demande de paiement',
+      'payment_select_all': 'Tout sélectionner',
+      'payment_clear_all': 'Désélectionner',
+      'payment_next': 'Suivant',
+
+      'payment_create_title': 'Demande de paiement',
+      'payment_recipients_label': 'Destinataires',
+      'payment_amount_label': 'Montant',
+      'payment_amount_hint': 'Ex. 10,00',
+      'payment_note_label': 'Description',
+      'payment_note_hint': 'Ex. Cotisation mensuelle / Terrain / Maillots...',
+      'payment_due_date_label': 'Date limite (optionnel)',
+      'payment_pick_date': 'Choisir la date',
+
+      'payment_send_request': 'Envoyer',
+      'payment_creating': 'Envoi...',
+      'payment_request_created_success': 'Demande créée avec succès !',
+      'payment_invalid_amount_error': 'Entrez un montant valide',
+      'payment_missing_fields_error': 'Veuillez remplir tous les champs requis',
+      'payment_no_recipients_error': 'Sélectionnez au moins une personne',
+
+      "home_no_payments": "Aucune demande de paiement.",
+      "payments_for_you_title": "Demandes pour vous",
+      "payments_created_by_you_title": "Créées par vous",
+      "payment_default_title": "Demande de paiement",
+      "payment_open_details_placeholder": "Détails du paiement bientôt disponibles",
+
+      "payment_status_pending": "En attente",
+      "payment_status_paid": "Payé",
+      "payment_status_partial": "Partiel",
+      "payment_targets_paid_hint": "payés",
+
+      "label_admin": "Admin",
+      "payment_admin_only_error": "Seul l’administrateur peut créer des demandes de paiement.",
+
+      "payment_delete_title": "Supprimer la demande",
+      "payment_delete_confirm": "Voulez-vous vraiment supprimer cette demande de paiement pour le groupe \"{groupName}\" ?",
+      "payment_deleted_success": "Demande de paiement supprimée.",
+      "button_delete": "Supprimer",
     },
 
     // 🇩🇪 GERMAN
@@ -1003,6 +1291,78 @@ class AppLocalizations {
       'error_invalid_email': 'Ungültige E-Mail',
       'error_email_in_use': 'Diese E-Mail ist bereits registriert',
       'error_weak_password': 'Passwort ist zu schwach',
+
+      //Messaggi
+      'messages_empty_title': 'Keine Chats',
+      'messages_empty_subtitle': 'Tritt einer Gruppe bei, um zu chatten.',
+      'chat_empty': 'Noch keine Nachrichten. Schreib die erste!',
+      'chat_hint': 'Nachricht schreiben...',
+      'chat_send_error': 'Senden fehlgeschlagen: {error}',
+      'chat_error_generic': 'Fehler',
+      'chat_no_messages_yet': 'Noch keine Nachrichten',
+      'chat_message_deleted_or_empty': '(leere Nachricht)',
+
+      //Sondaggi
+      'create_poll_title': 'Umfrage erstellen',
+      'poll_question_label': 'Frage',
+      'poll_question_hint': 'Z.B. Wer kommt zum Training?',
+      'poll_option_label': 'Option {number}',
+      'poll_add_option': 'Option hinzufügen',
+      'poll_remove_option': 'Entfernen',
+      'poll_publish': 'Umfrage veröffentlichen',
+      'poll_creating': 'Umfrage wird erstellt...',
+      'poll_min_options_error': 'Mindestens 2 Optionen eingeben',
+      'poll_missing_fields_error': 'Frage und Optionen ausfüllen',
+      'poll_created_success': 'Umfrage erfolgreich erstellt!',
+      'poll_allow_multiple': 'Mehrfachauswahl erlauben',
+      'poll_vote_saved': 'Stimme gespeichert',
+      'poll_total_votes': '{count} Stimmen',
+      'poll_multiple_hint': 'du kannst mehrere Optionen wählen',
+      "poll_delete_title": "Umfrage löschen",
+      "poll_delete_confirm": "Möchtest du diese Umfrage aus der Gruppe {groupName} wirklich löschen?",
+      "poll_deleted_success": "Umfrage gelöscht.",
+
+      //Pagamenti
+      'payment_select_people_title': 'Mitglieder auswählen',
+      'payment_select_people_subtitle': 'Wähle aus, wer die Zahlungsaufforderung erhalten soll',
+      'payment_select_all': 'Alle auswählen',
+      'payment_clear_all': 'Auswahl löschen',
+      'payment_next': 'Weiter',
+
+      'payment_create_title': 'Zahlungsaufforderung',
+      'payment_recipients_label': 'Empfänger',
+      'payment_amount_label': 'Betrag',
+      'payment_amount_hint': 'z.B. 10,00',
+      'payment_note_label': 'Beschreibung',
+      'payment_note_hint': 'z.B. Monatsbeitrag / Platz / Trikots...',
+      'payment_due_date_label': 'Fälligkeitsdatum (optional)',
+      'payment_pick_date': 'Datum wählen',
+
+      'payment_send_request': 'Senden',
+      'payment_creating': 'Senden...',
+      'payment_request_created_success': 'Anfrage erfolgreich erstellt!',
+      'payment_invalid_amount_error': 'Bitte einen gültigen Betrag eingeben',
+      'payment_missing_fields_error': 'Bitte alle Pflichtfelder ausfüllen',
+      'payment_no_recipients_error': 'Wähle mindestens eine Person aus',
+
+      "home_no_payments": "Keine Zahlungsanforderungen.",
+      "payments_for_you_title": "Anfragen für dich",
+      "payments_created_by_you_title": "Von dir erstellt",
+      "payment_default_title": "Zahlungsanforderung",
+      "payment_open_details_placeholder": "Zahlungsdetails folgen in Kürze",
+
+      "payment_status_pending": "Ausstehend",
+      "payment_status_paid": "Bezahlt",
+      "payment_status_partial": "Teilweise",
+      "payment_targets_paid_hint": "bezahlt",
+
+      "label_admin": "Admin",
+      "payment_admin_only_error": "Nur der Admin kann Zahlungsanforderungen erstellen.",
+
+      "payment_delete_title": "Anfrage löschen",
+      "payment_delete_confirm": "Möchtest du diese Zahlungsanforderung für die Gruppe \"{groupName}\" wirklich löschen?",
+      "payment_deleted_success": "Zahlungsanforderung gelöscht.",
+      "button_delete": "Löschen",
     },
 
     // 🇧🇷 PORTUGUESE
@@ -1197,6 +1557,78 @@ class AppLocalizations {
       'error_invalid_email': 'E-mail inválido',
       'error_email_in_use': 'Este e-mail já está em uso',
       'error_weak_password': 'Senha muito fraca',
+
+      //Messaggi
+      'messages_empty_title': 'Sem chats',
+      'messages_empty_subtitle': 'Entre em um grupo para começar a conversar.',
+      'chat_empty': 'Ainda não há mensagens. Escreva a primeira!',
+      'chat_hint': 'Digite uma mensagem...',
+      'chat_send_error': 'Erro ao enviar: {error}',
+      'chat_error_generic': 'Erro',
+      'chat_no_messages_yet': 'Ainda não há mensagens',
+      'chat_message_deleted_or_empty': '(mensagem vazia)',
+
+      //Sondaggi
+      'create_poll_title': 'Criar enquete',
+      'poll_question_label': 'Pergunta',
+      'poll_question_hint': 'Ex. Quem vai ao treino?',
+      'poll_option_label': 'Opção {number}',
+      'poll_add_option': 'Adicionar opção',
+      'poll_remove_option': 'Remover',
+      'poll_publish': 'Publicar enquete',
+      'poll_creating': 'Criando enquete...',
+      'poll_min_options_error': 'Insira pelo menos 2 opções',
+      'poll_missing_fields_error': 'Preencha a pergunta e as opções',
+      'poll_created_success': 'Enquete criada com sucesso!',
+      'poll_allow_multiple': 'Permitir múltiplas seleções',
+      'poll_vote_saved': 'Voto salvo',
+      'poll_total_votes': '{count} votos',
+      'poll_multiple_hint': 'você pode selecionar várias opções',
+      "poll_delete_title": "Eliminar enquete",
+      "poll_delete_confirm": "Tem certeza de que deseja eliminar esta enquete do grupo {groupName}?",
+      "poll_deleted_success": "Enquete eliminada.",
+
+      //Pagamenti
+      'payment_select_people_title': 'Selecionar membros',
+      'payment_select_people_subtitle': 'Escolha quem vai receber a solicitação de pagamento',
+      'payment_select_all': 'Selecionar todos',
+      'payment_clear_all': 'Limpar',
+      'payment_next': 'Avançar',
+
+      'payment_create_title': 'Solicitação de pagamento',
+      'payment_recipients_label': 'Destinatários',
+      'payment_amount_label': 'Valor',
+      'payment_amount_hint': 'Ex: 10,00',
+      'payment_note_label': 'Descrição',
+      'payment_note_hint': 'Ex: Mensalidade / Campo / Uniformes...',
+      'payment_due_date_label': 'Vencimento (opcional)',
+      'payment_pick_date': 'Escolher data',
+
+      'payment_send_request': 'Enviar solicitação',
+      'payment_creating': 'Enviando...',
+      'payment_request_created_success': 'Solicitação criada com sucesso!',
+      'payment_invalid_amount_error': 'Informe um valor válido',
+      'payment_missing_fields_error': 'Preencha todos os campos obrigatórios',
+      'payment_no_recipients_error': 'Selecione pelo menos uma pessoa',
+
+      "home_no_payments": "Nenhum pedido de pagamento.",
+      "payments_for_you_title": "Pedidos para você",
+      "payments_created_by_you_title": "Criados por você",
+      "payment_default_title": "Pedido de pagamento",
+      "payment_open_details_placeholder": "Detalhes do pagamento em breve",
+
+      "payment_status_pending": "Pendente",
+      "payment_status_paid": "Pago",
+      "payment_status_partial": "Parcial",
+      "payment_targets_paid_hint": "pagos",
+
+      "label_admin": "Admin",
+      "payment_admin_only_error": "Apenas o administrador pode criar solicitações de pagamento.",
+
+      "payment_delete_title": "Eliminar pedido",
+      "payment_delete_confirm": "Tens a certeza de que queres eliminar este pedido de pagamento do grupo \"{groupName}\"?",
+      "payment_deleted_success": "Pedido de pagamento eliminado.",
+      "button_delete": "Eliminar",
     },
   };
 
@@ -1233,5 +1665,5 @@ class AppLocalizationsDelegate
 
   @override
   bool shouldReload(covariant LocalizationsDelegate<AppLocalizations> old) =>
-      true;
+      false;
 }

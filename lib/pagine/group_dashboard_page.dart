@@ -4,14 +4,21 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../localization/app_localizations.dart';
 import 'event_type_selector_page.dart';
 import 'create_post_page.dart';
+import 'create_poll_page.dart';
+import 'payment_select_recipients_page.dart';
 import 'user_profile_page.dart';
 import 'event_details_page.dart';
 import 'member_list_page.dart';
 import '../widgets/soft_card.dart';
+
+// ✅ NOTIFICHE FOREGROUND
+import '../services/push_notification_service.dart';
 
 class GroupDashboardPage extends StatefulWidget {
   final String groupId;
@@ -33,7 +40,8 @@ class GroupDashboardPage extends StatefulWidget {
   State<GroupDashboardPage> createState() => _GroupDashboardPageState();
 }
 
-class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTickerProviderStateMixin {
+class _GroupDashboardPageState extends State<GroupDashboardPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   // --- STATO SELEZIONE ---
@@ -41,9 +49,19 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
   final Set<String> _selectedIds = {};
   String? _selectionType; // 'event' oppure 'post'
 
+  // ✅ Listener foreground (Firestore)
+  StreamSubscription<QuerySnapshot>? _eventsSub;
+  StreamSubscription<QuerySnapshot>? _postsSub;
+  StreamSubscription<QuerySnapshot>? _pollsSub;
+
+  bool _eventsPrimed = false;
+  bool _postsPrimed = false;
+  bool _pollsPrimed = false;
+
   @override
   void initState() {
     super.initState();
+
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (mounted) setState(() {});
@@ -51,12 +69,166 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
         _cancelSelection();
       }
     });
+
+    // ✅ Avvio notifiche FOREGROUND (solo mobile)
+    if (!kIsWeb) {
+      _startForegroundGroupNotifications();
+    }
   }
 
   @override
   void dispose() {
+    _eventsSub?.cancel();
+    _postsSub?.cancel();
+    _pollsSub?.cancel();
+
     _tabController.dispose();
     super.dispose();
+  }
+
+  // -------------------------
+  // NOTIFICHE FOREGROUND
+  // -------------------------
+
+  bool _isFromMe(Map<String, dynamic> data) {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (uid.isEmpty) return false;
+
+    const keys = ['createdBy', 'creatorId', 'authorId', 'userId', 'senderId'];
+    for (final k in keys) {
+      final v = (data[k] ?? '').toString().trim();
+      if (v == uid) return true;
+    }
+    return false;
+  }
+
+  Future<void> _notifyDashboard({
+    required String title,
+    required String body,
+    Map<String, dynamic>? extraData,
+  }) async {
+    await PushNotificationsService.instance.showLocal(
+      title: title,
+      body: body,
+      data: {
+        'type': 'group_content',
+        'groupId': widget.groupId,
+        ...(extraData ?? {}),
+      },
+    );
+  }
+
+  void _startForegroundGroupNotifications() {
+    // EVENTI (senza orderBy per evitare crash se qualche campo non esiste)
+    _eventsSub = FirebaseFirestore.instance
+        .collection('events')
+        .where('groupId', isEqualTo: widget.groupId)
+        .snapshots()
+        .listen((snap) async {
+      if (!_eventsPrimed) {
+        _eventsPrimed = true; // ignora primo caricamento
+        return;
+      }
+
+      final added =
+      snap.docChanges.where((c) => c.type == DocumentChangeType.added).toList();
+      if (added.isEmpty) return;
+
+      final doc = added.first.doc;
+      final data = (doc.data() as Map<String, dynamic>? ?? {});
+      if (_isFromMe(data)) return;
+
+      final customTitle = (data['title'] ?? '').toString().trim();
+      final homeTeam = (data['homeTeam'] ?? '').toString().trim();
+      final awayTeam = (data['awayTeam'] ?? '').toString().trim();
+
+      final body = customTitle.isNotEmpty
+          ? customTitle
+          : (homeTeam.isNotEmpty || awayTeam.isNotEmpty)
+          ? '$homeTeam vs $awayTeam'
+          : 'Tocca per aprire la bacheca';
+
+      await _notifyDashboard(
+        title: 'Nuovo evento',
+        body: body,
+        extraData: {
+          'contentType': 'event',
+          'contentId': doc.id,
+        },
+      );
+    });
+
+    // POST
+    _postsSub = FirebaseFirestore.instance
+        .collection('posts')
+        .where('groupId', isEqualTo: widget.groupId)
+        .snapshots()
+        .listen((snap) async {
+      if (!_postsPrimed) {
+        _postsPrimed = true;
+        return;
+      }
+
+      final added =
+      snap.docChanges.where((c) => c.type == DocumentChangeType.added).toList();
+      if (added.isEmpty) return;
+
+      final doc = added.first.doc;
+      final data = (doc.data() as Map<String, dynamic>? ?? {});
+      if (_isFromMe(data)) return;
+
+      final title = (data['title'] ?? '').toString().trim();
+      final desc = (data['description'] ?? '').toString().trim();
+
+      final body =
+      title.isNotEmpty ? title : (desc.isNotEmpty ? desc : 'Tocca per aprire la bacheca');
+
+      await _notifyDashboard(
+        title: 'Nuovo post',
+        body: body,
+        extraData: {
+          'contentType': 'post',
+          'contentId': doc.id,
+        },
+      );
+    });
+
+    // SONDAGGI
+    _pollsSub = FirebaseFirestore.instance
+        .collection('polls')
+        .where('groupId', isEqualTo: widget.groupId)
+        .snapshots()
+        .listen((snap) async {
+      if (!_pollsPrimed) {
+        _pollsPrimed = true;
+        return;
+      }
+
+      final added =
+      snap.docChanges.where((c) => c.type == DocumentChangeType.added).toList();
+      if (added.isEmpty) return;
+
+      final doc = added.first.doc;
+      final data = (doc.data() as Map<String, dynamic>? ?? {});
+      if (_isFromMe(data)) return;
+
+      final question = (data['question'] ?? '').toString().trim();
+      final title = (data['title'] ?? '').toString().trim();
+      final text = (data['text'] ?? '').toString().trim();
+
+      final body = question.isNotEmpty
+          ? question
+          : (title.isNotEmpty ? title : (text.isNotEmpty ? text : 'Tocca per aprire la bacheca'));
+
+      await _notifyDashboard(
+        title: 'Nuovo sondaggio',
+        body: body,
+        extraData: {
+          'contentType': 'poll',
+          'contentId': doc.id,
+        },
+      );
+    });
   }
 
   // --- LOGICA SELEZIONE ---
@@ -86,7 +258,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
       _selectedIds.add(id);
     });
 
-    HapticFeedback.mediumImpact(); // Vibrazione di conferma
+    HapticFeedback.mediumImpact();
   }
 
   void _toggleSelection(String id, String type) {
@@ -119,7 +291,8 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
 
     if (type == null) return;
 
-    final String title = type == 'event' ? loc.t('delete_event_title') : "Elimina post";
+    final String title =
+    type == 'event' ? loc.t('delete_event_title') : "Elimina post";
     final String content = type == 'event'
         ? loc.t('delete_event_confirm')
         : "Vuoi eliminare i $count elementi selezionati?";
@@ -130,10 +303,13 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
         title: Text(title),
         content: Text(content),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.t('button_cancel'))),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(loc.t('button_cancel'))),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Elimina", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            child: const Text("Elimina",
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -163,52 +339,116 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
 
   void _showAddOptions(AppLocalizations loc, ColorScheme colors) {
     final String currentSport = widget.groupSport;
+
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 8),
-              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2)),
+              ),
               const SizedBox(height: 16),
+
+              // EVENTO
               ListTile(
-                leading: CircleAvatar(backgroundColor: Colors.blue.withOpacity(0.1), child: const Icon(Icons.calendar_today, color: Colors.blue)),
-                title: Text(loc.t('fab_option_event'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                leading: CircleAvatar(
+                    backgroundColor: Colors.blue.withOpacity(0.1),
+                    child:
+                    const Icon(Icons.calendar_today, color: Colors.blue)),
+                title: Text(loc.t('fab_option_event'),
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => EventTypeSelectorPage(groupId: widget.groupId, groupSport: currentSport)));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EventTypeSelectorPage(
+                        groupId: widget.groupId,
+                        groupSport: currentSport,
+                      ),
+                    ),
+                  );
                 },
               ),
+
+              // POST
               ListTile(
-                leading: CircleAvatar(backgroundColor: Colors.orange.withOpacity(0.1), child: const Icon(Icons.article, color: Colors.orange)),
-                title: Text(loc.t('fab_option_post'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                leading: CircleAvatar(
+                    backgroundColor: Colors.orange.withOpacity(0.1),
+                    child: const Icon(Icons.article, color: Colors.orange)),
+                title: Text(loc.t('fab_option_post'),
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(loc.t('fab_option_post_sub')),
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => CreatePostPage(groupId: widget.groupId, groupName: widget.groupName, groupSport: widget.groupSport)));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CreatePostPage(
+                        groupId: widget.groupId,
+                        groupName: widget.groupName,
+                        groupSport: widget.groupSport,
+                      ),
+                    ),
+                  );
                 },
               ),
+
+              // SONDAGGIO
               ListTile(
-                leading: CircleAvatar(backgroundColor: Colors.purple.withOpacity(0.1), child: const Icon(Icons.poll, color: Colors.purple)),
-                title: Text(loc.t('fab_option_poll'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                leading: CircleAvatar(
+                    backgroundColor: Colors.purple.withOpacity(0.1),
+                    child: const Icon(Icons.poll, color: Colors.purple)),
+                title: Text(loc.t('fab_option_poll'),
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(loc.t('fab_option_poll_sub')),
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Sondaggio in sviluppo")));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CreatePollPage(
+                        groupId: widget.groupId,
+                        groupName: widget.groupName,
+                      ),
+                    ),
+                  );
                 },
               ),
+
+              // PAGAMENTO ✅
               ListTile(
-                leading: CircleAvatar(backgroundColor: Colors.green.withOpacity(0.1), child: const Icon(Icons.euro, color: Colors.green)),
-                title: Text(loc.t('fab_option_payment'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                leading: CircleAvatar(
+                    backgroundColor: Colors.green.withOpacity(0.1),
+                    child: const Icon(Icons.euro, color: Colors.green)),
+                title: Text(loc.t('fab_option_payment'),
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(loc.t('fab_option_payment_sub')),
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Pagamenti in sviluppo")));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PaymentSelectRecipientsPage(
+                        groupId: widget.groupId,
+                        groupName: widget.groupName,
+                        adminId: widget.adminId,
+                      ),
+                    ),
+                  );
                 },
               ),
+
               const SizedBox(height: 16),
             ],
           ),
@@ -228,8 +468,14 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
         title: Text(loc.t('dialog_leave_title')),
         content: Text(loc.t('dialog_leave_content')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.t('button_cancel'))),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(loc.t('info_leave_group'), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(loc.t('button_cancel'))),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(loc.t('info_leave_group'),
+                  style: const TextStyle(
+                      color: Colors.red, fontWeight: FontWeight.bold))),
         ],
       ),
     );
@@ -237,13 +483,19 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
     if (confirm != true) return;
 
     try {
-      await FirebaseFirestore.instance.collection('groups').doc(widget.groupId).update({'members': FieldValue.arrayRemove([user.uid])});
+      await FirebaseFirestore.instance
+          .collection('groups')
+          .doc(widget.groupId)
+          .update({'members': FieldValue.arrayRemove([user.uid])});
+
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.t('leave_success'))));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(loc.t('leave_success'))));
       Navigator.popUntil(context, ModalRoute.withName('/home'));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.t('leave_error', params: {'error': e.toString()}))));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(loc.t('leave_error', params: {'error': e.toString()}))));
     }
   }
 
@@ -258,12 +510,14 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
       appBar: _isSelectionMode
           ? AppBar(
         backgroundColor: colors.surfaceVariant,
-        leading: IconButton(icon: const Icon(Icons.close), onPressed: _cancelSelection),
+        leading: IconButton(
+            icon: const Icon(Icons.close), onPressed: _cancelSelection),
         title: Text("${_selectedIds.length} selezionati"),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: _selectedIds.isEmpty ? null : _deleteSelectedItems,
+            onPressed:
+            _selectedIds.isEmpty ? null : _deleteSelectedItems,
           ),
         ],
       )
@@ -275,9 +529,15 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
           labelColor: colors.primary,
           unselectedLabelColor: Colors.grey,
           tabs: [
-            Tab(text: loc.t('tab_board'), icon: const Icon(Icons.dashboard_outlined)),
-            Tab(text: loc.t('tab_members'), icon: const Icon(Icons.people_outline)),
-            Tab(text: loc.t('tab_info'), icon: const Icon(Icons.info_outline)),
+            Tab(
+                text: loc.t('tab_board'),
+                icon: const Icon(Icons.dashboard_outlined)),
+            Tab(
+                text: loc.t('tab_members'),
+                icon: const Icon(Icons.people_outline)),
+            Tab(
+                text: loc.t('tab_info'),
+                icon: const Icon(Icons.info_outline)),
           ],
         ),
       ),
@@ -312,8 +572,8 @@ class _GroupDashboardPageState extends State<GroupDashboardPage> with SingleTick
           ),
         ],
       ),
-
-      floatingActionButton: (!_isSelectionMode && _tabController.index == 0 && isAdmin)
+      floatingActionButton:
+      (!_isSelectionMode && _tabController.index == 0 && isAdmin)
           ? FloatingActionButton(
         onPressed: () => _showAddOptions(loc, colors),
         backgroundColor: colors.primary,
@@ -358,27 +618,32 @@ class _GroupBoardContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           // EVENTI
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('events')
                 .where('groupId', isEqualTo: groupId)
-                .where('startDateTime', isGreaterThanOrEqualTo: Timestamp.now())
+                .where('startDateTime',
+                isGreaterThanOrEqualTo: Timestamp.now())
                 .orderBy('startDateTime', descending: false)
                 .snapshots(),
             builder: (context, snapshot) {
-              if (snapshot.hasError) return Text("Errore eventi: ${snapshot.error}");
-              if (!snapshot.hasData) return const Center(child: LinearProgressIndicator());
+              if (snapshot.hasError) {
+                return Text("Errore eventi: ${snapshot.error}");
+              }
+              if (!snapshot.hasData) {
+                return const Center(child: LinearProgressIndicator());
+              }
 
               final events = snapshot.data!.docs;
-
               if (events.isEmpty) return const SizedBox();
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(loc.t('home_upcoming_events'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(loc.t('home_upcoming_events'),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
                   ListView.builder(
                     shrinkWrap: true,
@@ -386,24 +651,35 @@ class _GroupBoardContent extends StatelessWidget {
                     itemCount: events.length,
                     itemBuilder: (context, index) {
                       final eventDoc = events[index];
-                      final eventData = eventDoc.data() as Map<String, dynamic>;
+                      final eventData =
+                      eventDoc.data() as Map<String, dynamic>;
                       final eventId = eventDoc.id;
 
                       final isSelected = selectedIds.contains(eventId);
-                      final canSelect = (selectionType == null || selectionType == 'event');
+                      final canSelect =
+                      (selectionType == null || selectionType == 'event');
 
                       return _EventCard(
                         eventId: eventId,
                         event: eventData,
                         colors: Theme.of(context).colorScheme,
                         groupSport: groupSport,
-                        isSelectionMode: isSelectionMode && selectionType == 'event',
+                        isSelectionMode:
+                        isSelectionMode && selectionType == 'event',
                         isSelected: isSelected,
                         onTap: () {
                           if (isSelectionMode) {
                             if (canSelect) onToggleSelection(eventId, 'event');
                           } else {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => EventDetailsPage(eventId: eventId, isAdmin: isAdmin)));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => EventDetailsPage(
+                                  eventId: eventId,
+                                  isAdmin: isAdmin,
+                                ),
+                              ),
+                            );
                           }
                         },
                         onLongPress: () => onStartSelection(eventId, 'event'),
@@ -417,7 +693,9 @@ class _GroupBoardContent extends StatelessWidget {
           ),
 
           // POST
-          Text(loc.t('home_tab_posts'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          Text(loc.t('home_tab_posts'),
+              style:
+              const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 8),
 
           StreamBuilder<QuerySnapshot>(
@@ -427,11 +705,15 @@ class _GroupBoardContent extends StatelessWidget {
                 .orderBy('createdAt', descending: true)
                 .snapshots(),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Center(child: Text(loc.t('home_no_posts'), style: TextStyle(color: Colors.grey.shade600))),
+                  child: Center(
+                      child: Text(loc.t('home_no_posts'),
+                          style: TextStyle(color: Colors.grey.shade600))),
                 );
               }
 
@@ -447,7 +729,8 @@ class _GroupBoardContent extends StatelessWidget {
                   final postId = postDoc.id;
 
                   final isSelected = selectedIds.contains(postId);
-                  final canSelect = (selectionType == null || selectionType == 'post');
+                  final canSelect =
+                  (selectionType == null || selectionType == 'post');
 
                   return _SelectablePostCard(
                     postData: postData,
@@ -473,7 +756,7 @@ class _GroupBoardContent extends StatelessWidget {
 }
 
 // ----------------------------------------------------------------------
-// CARD EVENTO (INKWELL PER ANIMAZIONE)
+// CARD EVENTO
 // ----------------------------------------------------------------------
 class _EventCard extends StatelessWidget {
   final String eventId;
@@ -498,8 +781,10 @@ class _EventCard extends StatelessWidget {
 
   IconData _getSportIcon(String sportName) {
     final s = sportName.toLowerCase();
-    if (s.contains('pallavolo') || s.contains('volley')) return Icons.sports_volleyball;
-    if (s.contains('basket') || s.contains('pallacanestro')) return Icons.sports_basketball;
+    if (s.contains('pallavolo') || s.contains('volley'))
+      return Icons.sports_volleyball;
+    if (s.contains('basket') || s.contains('pallacanestro'))
+      return Icons.sports_basketball;
     if (s.contains('tennis')) return Icons.sports_tennis;
     if (s.contains('rugby')) return Icons.sports_rugby;
     if (s.contains('football')) return Icons.sports_football;
@@ -537,25 +822,28 @@ class _EventCard extends StatelessWidget {
     } else {
       iconData = _getSportIcon(groupSport);
       iconColor = Colors.green;
-      title = "${event['homeTeam'] ?? 'Squadra'} vs ${event['awayTeam'] ?? 'Squadra'}";
+      title =
+      "${event['homeTeam'] ?? 'Squadra'} vs ${event['awayTeam'] ?? 'Squadra'}";
     }
 
     String dateStr = "--/--";
     String timeStr = "--:--";
     if (date != null) {
-      dateStr = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}";
-      timeStr = "${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
+      dateStr =
+      "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}";
+      timeStr =
+      "${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
     }
 
-    final cardColor = isSelected ? colors.primaryContainer.withOpacity(0.3) : null;
+    final cardColor =
+    isSelected ? colors.primaryContainer.withOpacity(0.3) : null;
     final borderColor = isSelected ? colors.primary : Colors.transparent;
 
-    // 🔥 USIAMO INKWELL DENTRO LA CARD PER L'EFFETTO "CLICK" (RIPPLE)
     return Card(
       elevation: isSelected ? 0 : 2,
       color: cardColor,
       margin: const EdgeInsets.only(bottom: 12),
-      clipBehavior: Clip.antiAlias, // Importante per tagliare l'effetto onda
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: borderColor, width: 2),
@@ -563,7 +851,6 @@ class _EventCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
-        // Colore di sfondo quando premuto
         splashColor: colors.primary.withOpacity(0.2),
         highlightColor: colors.primary.withOpacity(0.1),
         child: Padding(
@@ -575,17 +862,26 @@ class _EventCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: Icon(
-                    isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                    isSelected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
                     color: isSelected ? colors.primary : Colors.grey,
                   ),
                 ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(color: colors.surfaceVariant, borderRadius: BorderRadius.circular(12)),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                    color: colors.surfaceVariant,
+                    borderRadius: BorderRadius.circular(12)),
                 child: Column(
                   children: [
-                    Text(dateStr, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Text(timeStr, style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold)),
+                    Text(dateStr,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(timeStr,
+                        style: TextStyle(
+                            color: colors.primary,
+                            fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -598,21 +894,36 @@ class _EventCard extends StatelessWidget {
                       children: [
                         Icon(iconData, size: 20, color: iconColor),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+                        Expanded(
+                          child: Text(title,
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        Icon(Icons.location_on, size: 14, color: Colors.grey.shade600),
+                        Icon(Icons.location_on,
+                            size: 14, color: Colors.grey.shade600),
                         const SizedBox(width: 4),
-                        Expanded(child: Text(location, style: TextStyle(fontSize: 13, color: Colors.grey.shade700), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                        Expanded(
+                          child: Text(
+                            location,
+                            style: TextStyle(
+                                fontSize: 13, color: Colors.grey.shade700),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
-              if (!isSelectionMode) const Icon(Icons.chevron_right, color: Colors.grey),
+              if (!isSelectionMode)
+                const Icon(Icons.chevron_right, color: Colors.grey),
             ],
           ),
         ),
@@ -622,7 +933,7 @@ class _EventCard extends StatelessWidget {
 }
 
 // ----------------------------------------------------------------------
-// CARD POST (INKWELL PER ANIMAZIONE)
+// CARD POST
 // ----------------------------------------------------------------------
 class _SelectablePostCard extends StatelessWidget {
   final Map<String, dynamic> postData;
@@ -645,14 +956,15 @@ class _SelectablePostCard extends StatelessWidget {
     final String title = postData['title'] ?? 'Senza titolo';
     final String desc = postData['description'] ?? '';
     final Timestamp? ts = postData['createdAt'];
-    final String dateStr = ts != null ? DateFormat('dd MMM HH:mm').format(ts.toDate()) : '';
+    final String dateStr =
+    ts != null ? DateFormat('dd MMM HH:mm').format(ts.toDate()) : '';
     final String? imageBase64 = postData['imageBase64'];
     final String? fileName = postData['fileName'];
 
-    final cardColor = isSelected ? colors.primaryContainer.withOpacity(0.3) : null;
+    final cardColor =
+    isSelected ? colors.primaryContainer.withOpacity(0.3) : null;
     final borderColor = isSelected ? colors.primary : Colors.transparent;
 
-    // 🔥 USIAMO INKWELL ANCHE QUI
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: isSelected ? 0 : 2,
@@ -675,7 +987,9 @@ class _SelectablePostCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(right: 12, top: 4),
                   child: Icon(
-                    isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                    isSelected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
                     color: isSelected ? colors.primary : Colors.grey,
                   ),
                 ),
@@ -683,9 +997,13 @@ class _SelectablePostCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(dateStr, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    Text(dateStr,
+                        style:
+                        const TextStyle(fontSize: 12, color: Colors.grey)),
                     const SizedBox(height: 8),
-                    Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(title,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
                     Text(desc, style: const TextStyle(fontSize: 15)),
                     const SizedBox(height: 12),
@@ -694,18 +1012,30 @@ class _SelectablePostCard extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.memory(base64Decode(imageBase64), width: double.infinity, height: 200, fit: BoxFit.cover),
+                          child: Image.memory(
+                            base64Decode(imageBase64),
+                            width: double.infinity,
+                            height: 200,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     if (fileName != null)
                       Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade300)),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
                         child: Row(
                           children: [
                             const Icon(Icons.description, color: Colors.red),
                             const SizedBox(width: 12),
-                            Expanded(child: Text(fileName, style: const TextStyle(fontWeight: FontWeight.bold))),
+                            Expanded(
+                                child: Text(fileName,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold))),
                           ],
                         ),
                       ),
@@ -744,8 +1074,10 @@ class _GroupInfoContent extends StatelessWidget {
 
   IconData _getSportIcon(String sportName) {
     final s = sportName.toLowerCase();
-    if (s.contains('pallavolo') || s.contains('volley')) return Icons.sports_volleyball;
-    if (s.contains('basket') || s.contains('pallacanestro')) return Icons.sports_basketball;
+    if (s.contains('pallavolo') || s.contains('volley'))
+      return Icons.sports_volleyball;
+    if (s.contains('basket') || s.contains('pallacanestro'))
+      return Icons.sports_basketball;
     if (s.contains('tennis')) return Icons.sports_tennis;
     if (s.contains('rugby')) return Icons.sports_rugby;
     if (s.contains('football')) return Icons.sports_football;
@@ -770,13 +1102,26 @@ class _GroupInfoContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(loc.t('info_invite_code_label'), style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                  Text(loc.t('info_invite_code_label'),
+                      style:
+                      TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(inviteCode, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: colors.primary, letterSpacing: 2.0)),
-                      IconButton(onPressed: () { Clipboard.setData(ClipboardData(text: inviteCode)); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.t('info_code_copied')))); }, icon: const Icon(Icons.copy)),
+                      Text(inviteCode,
+                          style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: colors.primary,
+                              letterSpacing: 2.0)),
+                      IconButton(
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: inviteCode));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text(loc.t('info_code_copied'))));
+                          },
+                          icon: const Icon(Icons.copy)),
                     ],
                   ),
                 ],
@@ -790,34 +1135,75 @@ class _GroupInfoContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(loc.t('info_sport'), style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                  Text(loc.t('info_sport'),
+                      style:
+                      TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: colors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Icon(_getSportIcon(groupSport), color: colors.primary, size: 28)),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                            color: colors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: Icon(_getSportIcon(groupSport),
+                            color: colors.primary, size: 28),
+                      ),
                       const SizedBox(width: 12),
-                      Text(groupSport, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                      Text(groupSport,
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w600)),
                     ],
                   ),
                   const Divider(height: 30),
-                  Text("Admin", style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                  Text("Admin",
+                      style:
+                      TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                   const SizedBox(height: 8),
                   FutureBuilder<DocumentSnapshot>(
-                    future: FirebaseFirestore.instance.collection('users').doc(adminId).get(),
+                    future: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(adminId)
+                        .get(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) return const Text("Caricamento...");
-                      final userData = snapshot.data!.data() as Map<String, dynamic>?;
+                      final userData =
+                      snapshot.data!.data() as Map<String, dynamic>?;
                       final name = userData?['displayName'] ?? "Admin";
-                      final String? photoBase64 = userData?['profileImageBase64'];
+                      final String? photoBase64 =
+                      userData?['profileImageBase64'];
+
                       ImageProvider? imageProvider;
-                      if (photoBase64 != null) { try { imageProvider = MemoryImage(base64Decode(photoBase64)); } catch (_) {} }
+                      if (photoBase64 != null) {
+                        try {
+                          imageProvider = MemoryImage(base64Decode(photoBase64));
+                        } catch (_) {}
+                      }
+
                       return InkWell(
-                        onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfilePage(userId: adminId, userName: name))); },
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserProfilePage(
+                                  userId: adminId, userName: name),
+                            ),
+                          );
+                        },
                         child: Row(
                           children: [
-                            CircleAvatar(radius: 20, backgroundColor: colors.primary.withOpacity(0.1), backgroundImage: imageProvider, child: imageProvider == null ? const Icon(Icons.person, size: 20) : null),
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundColor: colors.primary.withOpacity(0.1),
+                              backgroundImage: imageProvider,
+                              child: imageProvider == null
+                                  ? const Icon(Icons.person, size: 20)
+                                  : null,
+                            ),
                             const SizedBox(width: 12),
-                            Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            Text(name,
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
                             const Spacer(),
                             const Icon(Icons.chevron_right, color: Colors.grey),
                           ],
@@ -836,8 +1222,15 @@ class _GroupInfoContent extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onLeaveGroup,
                 icon: const Icon(Icons.logout, color: Colors.red),
-                label: Text(loc.t('info_leave_group'), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.red), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                label: Text(loc.t('info_leave_group'),
+                    style: const TextStyle(
+                        color: Colors.red, fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.red),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ),
         ],
