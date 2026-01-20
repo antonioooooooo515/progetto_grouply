@@ -169,7 +169,6 @@ class MessagesPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 10),
 
-                              // Preview ultimo messaggio
                               _LastMessagePreview(groupId: groupDoc.id),
                             ],
                           ),

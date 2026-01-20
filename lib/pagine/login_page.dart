@@ -10,7 +10,6 @@ import '../widgets/soft_input.dart';
 import '../widgets/big_button.dart';
 import '../widgets/tiny_text_button.dart';
 
-// ✅ IMPORT DEL SERVICE NOTIFICHE
 import '../services/push_notification_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -37,16 +36,12 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  /// ✅ Dopo login OK: inizializza FCM + naviga
-  /// (mostra anche l'errore reale se fallisce, non solo "push_init_failed")
   Future<void> _afterAuthSuccess() async {
     final loc = AppLocalizations.of(context);
 
     try {
-      // Inizializza push + salva token su Firestore
       await PushNotificationsService.instance.init();
     } catch (e) {
-      // Non blocchiamo l'accesso se le notifiche falliscono
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -258,8 +253,67 @@ class _LoginPageState extends State<LoginPage> {
                             TinyTextButton(
                               text: loc.t('forgot_password'),
                               alignment: Alignment.centerRight,
-                              onPressed: () {
-                                // TODO: reset password
+                              onPressed: () async {
+                                final email = _emailController.text.trim();
+
+                                if (email.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content:
+                                      Text(loc.t('validation_insert_email')),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                if (!email.contains('@')) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          loc.t('validation_email_invalid')),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                try {
+                                  await FirebaseAuth.instance
+                                      .sendPasswordResetEmail(email: email);
+
+                                  if (!mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content:
+                                      Text(loc.t('password_reset_sent')),
+                                    ),
+                                  );
+                                } on FirebaseAuthException catch (e) {
+                                  String message =
+                                  loc.t('error_password_reset');
+
+                                  if (e.code == 'invalid-email') {
+                                    message = loc.t('error_invalid_email');
+                                  } else if (e.code == 'user-not-found') {
+                                    message = loc.t('error_user_not_found');
+                                  } else if (e.code == 'too-many-requests') {
+                                    message = loc.t('error_too_many_requests');
+                                  }
+
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(message)),
+                                    );
+                                  }
+                                } catch (_) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            loc.t('error_unexpected_reset')),
+                                      ),
+                                    );
+                                  }
+                                }
                               },
                             ),
                             const SizedBox(height: 10),

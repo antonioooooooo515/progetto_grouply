@@ -28,7 +28,6 @@ class _CreatePollPageState extends State<CreatePollPage> {
 
   bool _loading = false;
 
-  // ✅ nuovo
   bool _allowMultiple = false;
 
   @override
@@ -109,10 +108,8 @@ class _CreatePollPageState extends State<CreatePollPage> {
         'createdBy': user.uid,
         'isActive': true,
 
-        // ✅ nuovo: per supportare voto multiplo in home
         'allowMultiple': _allowMultiple,
 
-        // voto iniziale vuoto (lo useremo nella home)
         'votes': <String, dynamic>{},
       });
 
@@ -171,7 +168,6 @@ class _CreatePollPageState extends State<CreatePollPage> {
             ),
             const SizedBox(height: 16),
 
-            // ✅ nuovo: scelta multipla
             SoftCard(
               child: SwitchListTile(
                 value: _allowMultiple,

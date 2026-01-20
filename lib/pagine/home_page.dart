@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 import 'group_page.dart';
 import 'messages_page.dart';
 import 'event_details_page.dart';
-import 'payments_page.dart'; // ✅ USA LA PAGINA PAGAMENTI CORRETTA
+import 'payments_page.dart';
 import '../localization/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
@@ -428,14 +428,14 @@ class _HomePageState extends State<HomePage>
           TabBarView(
             controller: _homeTabController,
             children: const [
-              _HomeTimelineContent(), // EVENTI
-              _HomePostsContent(), // POSTS
-              _HomePollsContent(), // SONDAGGI
+              _HomeTimelineContent(),
+              _HomePostsContent(),
+              _HomePollsContent(),
             ],
           ),
           GroupPage(),
           MessagesPage(),
-          const PaymentsPage(), // ✅ PAGAMENTI
+          const PaymentsPage(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -816,7 +816,7 @@ class _PostCard extends StatelessWidget {
 }
 
 // ----------------------------------------------------------------------
-// ✅ SONDAGGI (voto + risultati) + delete admin (tre puntini)
+// SONDAGGI
 // ----------------------------------------------------------------------
 
 class _HomePollsContent extends StatelessWidget {
@@ -873,7 +873,6 @@ class _HomePollsContent extends StatelessWidget {
               );
             }
 
-            // filtro lato client per evitare indice extra su isActive
             final activePolls = pollsSnapshot.data!.docs.where((d) {
               final data = d.data() as Map<String, dynamic>;
               return data['isActive'] == true;
@@ -1074,7 +1073,6 @@ class _PollCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ✅ header con gruppo + tre puntini admin
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

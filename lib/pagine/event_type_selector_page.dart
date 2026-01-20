@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../localization/app_localizations.dart';
 import 'create_event_page.dart';
-import 'create_recurring_event_page.dart'; // 👈 NUOVO IMPORT
+import 'create_recurring_event_page.dart';
 
 class EventTypeSelectorPage extends StatelessWidget {
   final String groupId;
@@ -26,7 +26,6 @@ class EventTypeSelectorPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Opzione 1: EVENTO SINGOLO
             _buildTypeCard(
               context,
               colors,
@@ -47,7 +46,6 @@ class EventTypeSelectorPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Opzione 2: EVENTO RICORRENTE (ORA ATTIVO)
             _buildTypeCard(
               context,
               colors,
@@ -55,7 +53,6 @@ class EventTypeSelectorPage extends StatelessWidget {
               subtitle: loc.t('event_type_recurring_sub'),
               icon: Icons.update,
               onTap: () {
-                // 👇 Naviga alla nuova pagina
                 Navigator.push(
                   context,
                   MaterialPageRoute(

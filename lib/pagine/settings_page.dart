@@ -149,15 +149,12 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: Text(loc.t('settings_title')),
         elevation: 0,
-        // 🔥 PULSANTE INDIETRO INTELLIGENTE
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // Se c'è una pagina precedente, torna indietro
             if (Navigator.canPop(context)) {
               Navigator.pop(context);
             } else {
-              // Se non c'è (es. dopo Hot Restart), vai forzatamente alla Home
               Navigator.pushReplacementNamed(context, '/home');
             }
           },
@@ -170,7 +167,7 @@ class _SettingsPageState extends State<SettingsPage> {
             Expanded(
               child: ListView(
                 children: [
-                  // TEMA
+                  //TEMA
                   Text(
                     loc.t('settings_section_theme'),
                     style: TextStyle(
@@ -208,7 +205,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                   const SizedBox(height: 24),
 
-                  // ACCOUNT
+                  //ACCOUNT
                   Text(
                     loc.t('settings_section_account'),
                     style: TextStyle(
@@ -232,7 +229,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                   const SizedBox(height: 24),
 
-                  // PROFILO
+                  //PROFILO
                   Text(
                     loc.t('settings_section_profile'),
                     style: TextStyle(
@@ -260,7 +257,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                   const SizedBox(height: 24),
 
-                  // LINGUA
+                  //LINGUA
                   Text(
                     loc.t('settings_section_language'),
                     style: TextStyle(
@@ -289,7 +286,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
             const SizedBox(height: 16),
 
-            // LOGOUT
+            //LOGOUT
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

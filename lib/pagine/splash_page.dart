@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // Per inizializzare
-import 'package:firebase_auth/firebase_auth.dart'; // Per controllare login
-import '../firebase_options.dart'; // Le tue opzioni
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../firebase_options.dart';
 
-// Importiamo le pagine
 import 'home_page.dart';
 import 'login_page.dart';
 
@@ -27,13 +26,11 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   void initState() {
     super.initState();
 
-    // 🔥 DURATA VELOCE: 800ms totali
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
 
-    // Sipario ALTO (Taglio Obliquo)
     _slideUpAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: const Offset(0.0, -1.1),
@@ -42,7 +39,6 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       curve: Curves.easeInExpo, // Parte piano, accelera alla fine
     ));
 
-    // Sipario BASSO (Taglio Obliquo)
     _slideDownAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: const Offset(0.0, 1.1),
@@ -51,7 +47,6 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       curve: Curves.easeInExpo,
     ));
 
-    // Logo: Ingrandimento
     _logoScaleAnimation = Tween<double>(begin: 1.0, end: 1.5).animate(
       CurvedAnimation(
         parent: _controller,
@@ -59,7 +54,6 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       ),
     );
 
-    // Logo: Dissolvenza
     _logoFadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
@@ -67,38 +61,30 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       ),
     );
 
-    // 🔥 PARTE TUTTO INSIEME (Animazione + Caricamento Dati)
     _startAppSequence();
   }
 
   Future<void> _startAppSequence() async {
-    // 1. Avvia animazione visiva SUBITO
     _controller.forward();
 
-    // 2. Tempo minimo per godersi l'animazione (800ms + 200ms pausa = 1s)
     final animationMinTime = Future.delayed(const Duration(milliseconds: 1000));
 
-    // 3. Inizializza Firebase in background mentre l'utente guarda
     final firebaseInit = _initFirebase();
 
-    // Aspetta che ENTRAMBE le cose siano finite
     await Future.wait([animationMinTime, firebaseInit]);
 
     if (!mounted) return;
 
-    // 4. Controllo Utente
     final user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      // Login già fatto -> HOME
       Navigator.of(context).pushReplacement(_createRoute(const HomePage()));
     } else {
-      // Login da fare -> LOGIN PAGE
       Navigator.of(context).pushReplacement(_createRoute(const LoginPage()));
     }
   }
 
-  // Inizializzazione sicura di Firebase
+  //INIZIALIZZAZIONE DI FIREBASE
   Future<void> _initFirebase() async {
     try {
       if (Firebase.apps.isEmpty) {
@@ -111,7 +97,6 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     }
   }
 
-  // Rotta istantanea (senza transizione laterale)
   Route _createRoute(Widget page) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => page,
@@ -130,14 +115,13 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    const Color curtainColor = Color(0xFFE91E63); // Fucsia
-    const Color appBackgroundColor = Color(0xFFF5F5F5); // Grigio App
+    const Color curtainColor = Color(0xFFE91E63);
+    const Color appBackgroundColor = Color(0xFFF5F5F5);
 
     return Scaffold(
       backgroundColor: appBackgroundColor,
       body: Stack(
         children: [
-          // Metà Superiore (Obliqua)
           Positioned.fill(
             child: SlideTransition(
               position: _slideUpAnimation,
@@ -148,7 +132,6 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
             ),
           ),
 
-          // Metà Inferiore (Obliqua)
           Positioned.fill(
             child: SlideTransition(
               position: _slideDownAnimation,
@@ -159,7 +142,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
             ),
           ),
 
-          // Logo (Originale)
+          //LOGO
           Center(
             child: FadeTransition(
               opacity: _logoFadeAnimation,
@@ -179,7 +162,6 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   }
 }
 
-// --- CLIPPERS (TAGLIO DIAGONALE) ---
 class TopAngledClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {

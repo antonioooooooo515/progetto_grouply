@@ -1,8 +1,8 @@
-import 'dart:convert'; // Per leggere i dati JSON
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:http/http.dart' as http; // Per fare le richieste internet
+import 'package:http/http.dart' as http;
 
 class LocationPickerPage extends StatefulWidget {
   const LocationPickerPage({super.key});
@@ -26,7 +26,6 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
     super.dispose();
   }
 
-  // 🔍 1. CERCA INDIRIZZO (Nominatim API)
   Future<void> _searchPlace() async {
     final query = _searchController.text.trim();
     if (query.isEmpty) return;
@@ -35,12 +34,10 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
     FocusScope.of(context).unfocus();
 
     try {
-      // Chiamata API gratuita a OpenStreetMap
       final url = Uri.parse(
         'https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=1',
       );
 
-      // L'header User-Agent è OBBLIGATORIO per Nominatim
       final response = await http.get(url, headers: {
         'User-Agent': 'com.example.grouply',
       });
@@ -60,7 +57,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
 
           setState(() {
             _currentLocation = newPoint;
-            _address = displayName; // Indirizzo completo fornito da OSM
+            _address = displayName;
           });
         } else {
           _showSnack("Nessun luogo trovato per '$query'");
@@ -75,7 +72,6 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
     }
   }
 
-  // 📍 2. TOCCA MAPPA -> TROVA INDIRIZZO (Reverse Geocoding)
   Future<void> _handleTap(TapPosition tapPosition, LatLng point) async {
     setState(() {
       _currentLocation = point;
@@ -95,12 +91,8 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // Nominatim restituisce un campo "display_name" molto dettagliato
-        // Possiamo pulirlo prendendo solo via e città se vogliamo,
-        // ma display_name è il più sicuro.
         String foundAddress = data['display_name'] ?? "Indirizzo sconosciuto";
 
-        // Opzionale: Prendiamo solo le prime 2 parti dell'indirizzo per accorciarlo
         List<String> parts = foundAddress.split(',');
         if (parts.length > 2) {
           foundAddress = "${parts[0]}, ${parts[1]}";
@@ -149,7 +141,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
             ),
           ),
         ),
-        backgroundColor: const Color(0xFFE91E63), // Usa il tuo colore primario
+        backgroundColor: const Color(0xFFE91E63),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Stack(
@@ -183,7 +175,6 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
             ],
           ),
 
-          // PANNELLO CONFERMA
           Positioned(
             bottom: 0,
             left: 0,

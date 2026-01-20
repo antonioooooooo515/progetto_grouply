@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:convert'; // Per le immagini base64
+import 'dart:convert';
 
 import '../localization/app_localizations.dart';
-import 'user_profile_page.dart'; // Per navigare al profilo
+import 'user_profile_page.dart';
 
 class MemberListPage extends StatelessWidget {
   final String groupId;
@@ -21,24 +21,20 @@ class MemberListPage extends StatelessWidget {
     final loc = AppLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
 
-    // 1. Ascolta il documento del GRUPPO in tempo reale
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
           .collection('groups')
           .doc(groupId)
           .snapshots(),
       builder: (context, snapshot) {
-        // Gestione caricamento
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // Gestione errori o gruppo non trovato
         if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
           return const Center(child: Text("Impossibile caricare i membri"));
         }
 
-        // Estrazione dati gruppo
         final groupData = snapshot.data!.data() as Map<String, dynamic>;
         final List<dynamic> membersList = groupData['members'] ?? [];
         final String adminId = groupData['adminId'] ?? '';
@@ -47,13 +43,11 @@ class MemberListPage extends StatelessWidget {
           return const Center(child: Text("Nessun membro nel gruppo"));
         }
 
-        // 2. Costruisce la lista visiva
         return ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: membersList.length + 1, // +1 per il titolo
+          itemCount: membersList.length + 1,
           itemBuilder: (context, index) {
 
-            // Intestazione con il conteggio
             if (index == 0) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -64,11 +58,9 @@ class MemberListPage extends StatelessWidget {
               );
             }
 
-            // Dati del singolo membro
-            final String memberId = membersList[index - 1]; // -1 per compensare il titolo
+            final String memberId = membersList[index - 1];
             final bool isUserAdmin = (memberId == adminId);
 
-            // 3. Widget che scarica i dati dell'utente (Nome, Foto)
             return _MemberTile(
               userId: memberId,
               isAdmin: isUserAdmin,
@@ -82,7 +74,6 @@ class MemberListPage extends StatelessWidget {
   }
 }
 
-// 🔥 WIDGET CHE SCARICA I DATI UTENTE
 class _MemberTile extends StatelessWidget {
   final String userId;
   final bool isAdmin;
@@ -101,11 +92,9 @@ class _MemberTile extends StatelessWidget {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
     final isMe = (userId == currentUserId);
 
-    // Scarica i dati dalla collezione 'users'
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
       builder: (context, snapshot) {
-        // Dati di default mentre carica
         String displayName = "Caricamento...";
         String role = "";
         String? profileImageBase64;
@@ -117,10 +106,8 @@ class _MemberTile extends StatelessWidget {
           profileImageBase64 = userData['profileImageBase64'];
         }
 
-        // Aggiungi (Tu) se è l'utente corrente
         if (isMe) displayName += " (Tu)";
 
-        // Gestione immagine profilo
         ImageProvider? imageProvider;
         if (profileImageBase64 != null) {
           try {
@@ -135,7 +122,6 @@ class _MemberTile extends StatelessWidget {
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             onTap: () {
-              // Naviga al profilo completo
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -146,7 +132,6 @@ class _MemberTile extends StatelessWidget {
                 ),
               );
             },
-            // Avatar
             leading: CircleAvatar(
               backgroundColor: colors.primary.withOpacity(0.1),
               backgroundImage: imageProvider,
@@ -154,7 +139,6 @@ class _MemberTile extends StatelessWidget {
                   ? Icon(Icons.person, color: colors.primary)
                   : null,
             ),
-            // Nome
             title: Text(
               displayName,
               style: TextStyle(
@@ -162,7 +146,6 @@ class _MemberTile extends StatelessWidget {
                 fontSize: 16,
               ),
             ),
-            // Ruolo (sottotitolo)
             subtitle: role.isNotEmpty
                 ? Text(role, style: TextStyle(color: Colors.grey.shade600))
                 : null,
@@ -170,7 +153,7 @@ class _MemberTile extends StatelessWidget {
             trailing: isAdmin
                 ? Chip(
               label: Text(
-                loc.t('member_admin_badge'), // "Admin"
+                loc.t('member_admin_badge'),
                 style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
               ),
               backgroundColor: colors.primary,

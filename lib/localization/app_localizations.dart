@@ -10,11 +10,11 @@ class AppLocalizations {
   }
 
   static const _localizedValues = <String, Map<String, String>>{
-    // 🇮🇹 ITALIANO
+    //ITALIANO
     'it': {
       'app_title': 'Grouply - Team Manager',
 
-      // AGENDA
+      //EVENTI AGENDA
       'label_today': 'Oggi',
       'label_tomorrow': 'Domani',
       'home_upcoming_events': 'Prossimi Eventi',
@@ -22,14 +22,14 @@ class AppLocalizations {
       'home_no_groups': 'Non sei in nessun gruppo. Unisciti a uno per vedere gli eventi!',
       'event_group_label': 'Gruppo: {group}',
 
-      // TAB HOME
+      //HOME
       'home_tab_events': 'Eventi',
       'home_tab_posts': 'Post',
       'home_tab_polls': 'Sondaggi',
       'home_no_posts': 'Nessun post in bacheca',
       'home_no_polls': 'Nessun sondaggio attivo',
 
-      // LOGIN & REGISTER
+      //LOGIN E REGISTRAZIONE
       'login_title': 'Bentornato!',
       'login_subtitle': 'Accedi per continuare',
       'email_label': 'Email',
@@ -51,7 +51,7 @@ class AppLocalizations {
       'go_to_login_button': 'Vai alla pagina di login',
       'have_account': 'Hai già un account?',
 
-      // GESTIONE GRUPPI
+      //GESTIONE GRUPPI
       'home_title': 'Home',
       'home_message': 'Benvenuto nella Home di Grouply',
       'close_button': 'Chiudi',
@@ -79,7 +79,7 @@ class AppLocalizations {
       'group_empty_subtitle': 'Non fai ancora parte di nessun team.\nCrea un gruppo o unisciti a uno esistente!',
       'group_members_count': '{count} membri',
 
-      // DASHBOARD GRUPPO
+      //DASHBOARD GRUPPO
       'tab_board': 'Bacheca',
       'tab_members': 'Membri',
       'tab_info': 'Info',
@@ -96,7 +96,7 @@ class AppLocalizations {
       'leave_success': 'Sei uscito dal gruppo correttamente.',
       'leave_error': 'Errore durante l\'uscita: {error}',
 
-      // FAB OPZIONI
+      //FAB OPZIONI
       'fab_option_event': 'Evento',
       'fab_option_post': 'Post',
       'fab_option_post_sub': 'Condividi informazioni, foto e file',
@@ -105,7 +105,7 @@ class AppLocalizations {
       'fab_option_payment': 'Richieste di pagamento',
       'fab_option_payment_sub': 'Raccogli quote dai membri',
 
-      // CREAZIONE EVENTO
+      //CREAZIONE EVENTI
       'event_select_type_title': 'Seleziona tipo',
       'event_type_single': 'Evento',
       'event_type_single_sub': 'Invita persone a partite, tornei o altri eventi sociali',
@@ -140,7 +140,7 @@ class AppLocalizations {
       'event_created_success': 'Evento creato con successo!',
       'error_missing_fields': 'Compila tutti i campi obbligatori',
 
-      // 🔥 NUOVO: CREAZIONE POST
+      //CREAZIONE POST
       'create_post_title': 'Crea un post',
       'label_publish_in': 'Pubblica in:',
       'label_post_title': 'Titolo del post',
@@ -151,7 +151,7 @@ class AppLocalizations {
       'post_created_success': 'Post pubblicato con successo!',
       'error_no_group_selected': 'Nessun gruppo selezionato',
 
-      // DETTAGLI EVENTO
+      //DETTAGLI EVENTO
       'event_details_title': 'Dettagli Evento',
       'status_title': 'La tua presenza',
       'btn_accept': 'Ci sarò',
@@ -167,11 +167,11 @@ class AppLocalizations {
       'event_deleted': 'Evento eliminato correttamente.',
       'error_deleting_event': 'Errore durante l\'eliminazione: {error}',
 
-      // ALTRE PAGINE
+      //PAGAMENTI E MESSAGGI
       'messages_placeholder': 'Sezione Messaggi\n(qui vedrai le tue chat)',
       'payments_placeholder': 'Sezione Pagamenti\n(qui gestirai abbonamenti, quote, ecc.)',
 
-      // PROFILO
+      //PROFILO
       'profile_title': 'Gestione Profilo',
       'profile_change_photo': 'Cambia foto profilo',
       'label_name': 'Nome',
@@ -186,7 +186,7 @@ class AppLocalizations {
       'toast_login_required': 'Devi essere loggato per salvare',
       'toast_photo_error': 'Errore durante il caricamento della foto',
 
-      // IMPOSTAZIONI
+      //IMPOSTAZIONI
       'settings_title': 'Impostazioni',
       'settings_section_theme': 'Tema',
       'settings_change_theme': 'Cambia tema',
@@ -209,7 +209,7 @@ class AppLocalizations {
       'language_changed_snackbar': 'Lingua impostata su {language}',
       'logout_button': 'Esci',
 
-      // VALIDAZIONE
+      //VALIDAZIONE
       'validation_insert_email': 'Inserisci la tua email',
       'validation_email_invalid': 'Email non valida',
       'validation_insert_password': 'Inserisci la password',
@@ -228,7 +228,7 @@ class AppLocalizations {
       'error_email_in_use': 'Questa email è già registrata',
       'error_weak_password': 'La password è troppo debole',
 
-      //Messaggi
+      //MESSAGGI
       'messages_empty_title': 'Nessuna chat',
       'messages_empty_subtitle': 'Entra in un gruppo per iniziare a chattare.',
       'chat_empty': 'Nessun messaggio. Scrivi il primo!',
@@ -238,7 +238,7 @@ class AppLocalizations {
       'chat_no_messages_yet': 'Nessun messaggio ancora',
       'chat_message_deleted_or_empty': '(messaggio vuoto)',
 
-      //Sondaggi
+      //SONDAGGI
       'create_poll_title': 'Crea un sondaggio',
       'poll_question_label': 'Domanda',
       'poll_question_hint': 'Es. Chi viene all’allenamento?',
@@ -258,13 +258,12 @@ class AppLocalizations {
       "poll_delete_confirm": "Vuoi davvero eliminare questo sondaggio del gruppo {groupName}?",
       "poll_deleted_success": "Sondaggio eliminato.",
 
-      //Pagamenti
+      //PAGAMENTI
       'payment_select_people_title': 'Seleziona membri',
       'payment_select_people_subtitle': 'Scegli le persone a cui inviare la richiesta di pagamento',
       'payment_select_all': 'Seleziona tutti',
       'payment_clear_all': 'Deseleziona',
       'payment_next': 'Avanti',
-
       'payment_create_title': 'Richiesta di pagamento',
       'payment_recipients_label': 'Destinatari',
       'payment_amount_label': 'Importo',
@@ -273,35 +272,30 @@ class AppLocalizations {
       'payment_note_hint': 'Es. Quota mensile / Campo / Divise...',
       'payment_due_date_label': 'Scadenza (opzionale)',
       'payment_pick_date': 'Scegli data',
-
       'payment_send_request': 'Invia richiesta',
       'payment_creating': 'Invio...',
       'payment_request_created_success': 'Richiesta creata con successo!',
       'payment_invalid_amount_error': 'Inserisci un importo valido',
       'payment_missing_fields_error': 'Compila tutti i campi richiesti',
       'payment_no_recipients_error': 'Seleziona almeno una persona',
-
       "home_no_payments": "Nessuna richiesta di pagamento.",
       "payments_for_you_title": "Richieste per te",
       "payments_created_by_you_title": "Create da te",
       "payment_default_title": "Richiesta di pagamento",
       "payment_open_details_placeholder": "Dettagli pagamento in arrivo",
-
       "payment_status_pending": "In sospeso",
       "payment_status_paid": "Pagato",
       "payment_status_partial": "Parziale",
       "payment_targets_paid_hint": "pagati",
-
       "label_admin": "Admin",
       "payment_admin_only_error": "Solo l'amministratore può creare richieste di pagamento.",
-
       "payment_delete_title": "Elimina richiesta",
       "payment_delete_confirm": "Vuoi davvero eliminare questa richiesta di pagamento del gruppo \"{groupName}\"?",
       "payment_deleted_success": "Richiesta di pagamento eliminata.",
       "button_delete": "Elimina",
     },
 
-    // 🇺🇸 ENGLISH
+    //INGLESE
     'en': {
       'app_title': 'Grouply - Team Manager',
       'home_tab_events': 'Events',
@@ -324,7 +318,6 @@ class AppLocalizations {
       'btn_publish': 'Publish',
       'post_created_success': 'Post published successfully!',
       'error_no_group_selected': 'No group selected',
-      // ... (Resto delle chiavi EN)
       'label_location': 'Location',
       'label_meeting_point': 'Meeting point',
       'label_meeting_time': 'Meeting time',
@@ -494,7 +487,7 @@ class AppLocalizations {
       'error_email_in_use': 'This email is already registered',
       'error_weak_password': 'Password is too weak',
 
-      //Messaggi
+      //MESSAGGI
       'messages_empty_title': 'No chats',
       'messages_empty_subtitle': 'Join a group to start chatting.',
       'chat_empty': 'No messages yet. Write the first one!',
@@ -504,7 +497,7 @@ class AppLocalizations {
       'chat_no_messages_yet': 'No messages yet',
       'chat_message_deleted_or_empty': '(empty message)',
 
-      //Sondaggi
+      //SONDAGGI
       'create_poll_title': 'Create poll',
       'poll_question_label': 'Question',
       'poll_question_hint': 'E.g. Who is coming to training?',
@@ -524,13 +517,12 @@ class AppLocalizations {
       "poll_delete_confirm": "Do you really want to delete this poll from the group {groupName}?",
       "poll_deleted_success": "Poll deleted.",
 
-      //Pagamenti
+      //PAGAMENTI
       'payment_select_people_title': 'Select members',
       'payment_select_people_subtitle': 'Choose who will receive the payment request',
       'payment_select_all': 'Select all',
       'payment_clear_all': 'Clear',
       'payment_next': 'Next',
-
       'payment_create_title': 'Payment request',
       'payment_recipients_label': 'Recipients',
       'payment_amount_label': 'Amount',
@@ -539,35 +531,30 @@ class AppLocalizations {
       'payment_note_hint': 'e.g. Monthly fee / Field / Jerseys...',
       'payment_due_date_label': 'Due date (optional)',
       'payment_pick_date': 'Pick date',
-
       'payment_send_request': 'Send request',
       'payment_creating': 'Sending...',
       'payment_request_created_success': 'Request created successfully!',
       'payment_invalid_amount_error': 'Enter a valid amount',
       'payment_missing_fields_error': 'Please fill in all required fields',
       'payment_no_recipients_error': 'Select at least one person',
-
       "home_no_payments": "No payment requests.",
       "payments_for_you_title": "Requests for you",
       "payments_created_by_you_title": "Created by you",
       "payment_default_title": "Payment request",
       "payment_open_details_placeholder": "Payment details coming soon",
-
       "payment_status_pending": "Pending",
       "payment_status_paid": "Paid",
       "payment_status_partial": "Partial",
       "payment_targets_paid_hint": "paid",
-
       "label_admin": "Admin",
       "payment_admin_only_error": "Only the admin can create payment requests.",
-
       "payment_delete_title": "Delete request",
       "payment_delete_confirm": "Do you really want to delete this payment request for the group \"{groupName}\"?",
       "payment_deleted_success": "Payment request deleted.",
       "button_delete": "Delete",
     },
 
-    // 🇪🇸 SPANISH
+    //SPAGNOLO
     'es': {
       'app_title': 'Grouply - Team Manager',
       'create_post_title': 'Crear publicación',
@@ -579,7 +566,6 @@ class AppLocalizations {
       'btn_publish': 'Publicar',
       'post_created_success': '¡Publicación creada con éxito!',
       'error_no_group_selected': 'Ningún grupo seleccionado',
-      // ... (Resto delle chiavi ES) ...
       'home_tab_events': 'Eventos',
       'home_tab_posts': 'Publicaciones',
       'home_tab_polls': 'Encuestas',
@@ -760,7 +746,7 @@ class AppLocalizations {
       'error_email_in_use': 'Este correo ya está registrado',
       'error_weak_password': 'La contraseña es demasiado débil',
 
-      //Messaggi
+      //MESSAGGI
       'messages_empty_title': 'Sin chats',
       'messages_empty_subtitle': 'Únete a un grupo para empezar a chatear.',
       'chat_empty': 'Aún no hay mensajes. ¡Escribe el primero!',
@@ -770,7 +756,7 @@ class AppLocalizations {
       'chat_no_messages_yet': 'Aún no hay mensajes',
       'chat_message_deleted_or_empty': '(mensaje vacío)',
 
-      //Sondaggi
+      //SONDAGGI
       'create_poll_title': 'Crear encuesta',
       'poll_question_label': 'Pregunta',
       'poll_question_hint': 'Ej. ¿Quién viene al entrenamiento?',
@@ -790,13 +776,12 @@ class AppLocalizations {
       "poll_delete_confirm": "¿De verdad quieres eliminar esta encuesta del grupo {groupName}?",
       "poll_deleted_success": "Encuesta eliminada.",
 
-      //Pagamenti
+      //PAGAMENTI
       'payment_select_people_title': 'Seleccionar miembros',
       'payment_select_people_subtitle': 'Elige a quién enviar la solicitud de pago',
       'payment_select_all': 'Seleccionar todo',
       'payment_clear_all': 'Deseleccionar',
       'payment_next': 'Siguiente',
-
       'payment_create_title': 'Solicitud de pago',
       'payment_recipients_label': 'Destinatarios',
       'payment_amount_label': 'Importe',
@@ -805,35 +790,30 @@ class AppLocalizations {
       'payment_note_hint': 'Ej. Cuota mensual / Campo / Equipación...',
       'payment_due_date_label': 'Vencimiento (opcional)',
       'payment_pick_date': 'Elegir fecha',
-
       'payment_send_request': 'Enviar solicitud',
       'payment_creating': 'Enviando...',
       'payment_request_created_success': '¡Solicitud creada con éxito!',
       'payment_invalid_amount_error': 'Introduce un importe válido',
       'payment_missing_fields_error': 'Completa todos los campos obligatorios',
       'payment_no_recipients_error': 'Selecciona al menos una persona',
-
       "home_no_payments": "No hay solicitudes de pago.",
       "payments_for_you_title": "Solicitudes para ti",
       "payments_created_by_you_title": "Creadas por ti",
       "payment_default_title": "Solicitud de pago",
       "payment_open_details_placeholder": "Detalles del pago próximamente",
-
       "payment_status_pending": "Pendiente",
       "payment_status_paid": "Pagado",
       "payment_status_partial": "Parcial",
       "payment_targets_paid_hint": "pagados",
-
       "label_admin": "Admin",
       "payment_admin_only_error": "Solo el administrador puede crear solicitudes de pago.",
-
       "payment_delete_title": "Eliminar solicitud",
       "payment_delete_confirm": "¿De verdad quieres eliminar esta solicitud de pago del grupo \"{groupName}\"?",
       "payment_deleted_success": "Solicitud de pago eliminada.",
       "button_delete": "Eliminar",
     },
 
-    // 🇫🇷 FRENCH
+    //FRANCESE
     'fr': {
       'app_title': 'Grouply - Gestion d\'équipe',
       'create_post_title': 'Créer une publication',
@@ -845,7 +825,6 @@ class AppLocalizations {
       'btn_publish': 'Publier',
       'post_created_success': 'Publication créée avec succès !',
       'error_no_group_selected': 'Aucun groupe sélectionné',
-      // ... (Resto delle chiavi FR) ...
       'home_tab_events': 'Événements',
       'home_tab_posts': 'Publications',
       'home_tab_polls': 'Sondages',
@@ -1026,7 +1005,7 @@ class AppLocalizations {
       'error_email_in_use': 'Cet email est déjà enregistré',
       'error_weak_password': 'Mot de passe trop faible',
 
-      //Messaggi
+      //MESSAGGI
       'messages_empty_title': 'Aucune discussion',
       'messages_empty_subtitle': 'Rejoignez un groupe pour commencer à discuter.',
       'chat_empty': 'Aucun message. Écrivez le premier !',
@@ -1036,7 +1015,7 @@ class AppLocalizations {
       'chat_no_messages_yet': 'Aucun message pour l’instant',
       'chat_message_deleted_or_empty': '(message vide)',
 
-      //Sondaggi
+      //SONDAGGI
       'create_poll_title': 'Créer un sondage',
       'poll_question_label': 'Question',
       'poll_question_hint': 'Ex. Qui vient à l’entraînement ?',
@@ -1056,13 +1035,12 @@ class AppLocalizations {
       "poll_delete_confirm": "Voulez-vous vraiment supprimer ce sondage du groupe {groupName} ?",
       "poll_deleted_success": "Sondage supprimé.",
 
-      //Pagamenti
+      //PAGAMENTI
       'payment_select_people_title': 'Sélectionner des membres',
       'payment_select_people_subtitle': 'Choisissez les personnes qui recevront la demande de paiement',
       'payment_select_all': 'Tout sélectionner',
       'payment_clear_all': 'Désélectionner',
       'payment_next': 'Suivant',
-
       'payment_create_title': 'Demande de paiement',
       'payment_recipients_label': 'Destinataires',
       'payment_amount_label': 'Montant',
@@ -1071,35 +1049,30 @@ class AppLocalizations {
       'payment_note_hint': 'Ex. Cotisation mensuelle / Terrain / Maillots...',
       'payment_due_date_label': 'Date limite (optionnel)',
       'payment_pick_date': 'Choisir la date',
-
       'payment_send_request': 'Envoyer',
       'payment_creating': 'Envoi...',
       'payment_request_created_success': 'Demande créée avec succès !',
       'payment_invalid_amount_error': 'Entrez un montant valide',
       'payment_missing_fields_error': 'Veuillez remplir tous les champs requis',
       'payment_no_recipients_error': 'Sélectionnez au moins une personne',
-
       "home_no_payments": "Aucune demande de paiement.",
       "payments_for_you_title": "Demandes pour vous",
       "payments_created_by_you_title": "Créées par vous",
       "payment_default_title": "Demande de paiement",
       "payment_open_details_placeholder": "Détails du paiement bientôt disponibles",
-
       "payment_status_pending": "En attente",
       "payment_status_paid": "Payé",
       "payment_status_partial": "Partiel",
       "payment_targets_paid_hint": "payés",
-
       "label_admin": "Admin",
       "payment_admin_only_error": "Seul l’administrateur peut créer des demandes de paiement.",
-
       "payment_delete_title": "Supprimer la demande",
       "payment_delete_confirm": "Voulez-vous vraiment supprimer cette demande de paiement pour le groupe \"{groupName}\" ?",
       "payment_deleted_success": "Demande de paiement supprimée.",
       "button_delete": "Supprimer",
     },
 
-    // 🇩🇪 GERMAN
+    //TEDESCO
     'de': {
       'app_title': 'Grouply - Team Manager',
       'create_post_title': 'Beitrag erstellen',
@@ -1111,7 +1084,6 @@ class AppLocalizations {
       'btn_publish': 'Veröffentlichen',
       'post_created_success': 'Beitrag erfolgreich erstellt!',
       'error_no_group_selected': 'Keine Gruppe ausgewählt',
-      // ... (Resto delle chiavi DE) ...
       'home_tab_events': 'Termine',
       'home_tab_posts': 'Beiträge',
       'home_tab_polls': 'Umfragen',
@@ -1292,7 +1264,7 @@ class AppLocalizations {
       'error_email_in_use': 'Diese E-Mail ist bereits registriert',
       'error_weak_password': 'Passwort ist zu schwach',
 
-      //Messaggi
+      //MESSAGGI
       'messages_empty_title': 'Keine Chats',
       'messages_empty_subtitle': 'Tritt einer Gruppe bei, um zu chatten.',
       'chat_empty': 'Noch keine Nachrichten. Schreib die erste!',
@@ -1302,7 +1274,7 @@ class AppLocalizations {
       'chat_no_messages_yet': 'Noch keine Nachrichten',
       'chat_message_deleted_or_empty': '(leere Nachricht)',
 
-      //Sondaggi
+      //SONDAGGI
       'create_poll_title': 'Umfrage erstellen',
       'poll_question_label': 'Frage',
       'poll_question_hint': 'Z.B. Wer kommt zum Training?',
@@ -1322,13 +1294,12 @@ class AppLocalizations {
       "poll_delete_confirm": "Möchtest du diese Umfrage aus der Gruppe {groupName} wirklich löschen?",
       "poll_deleted_success": "Umfrage gelöscht.",
 
-      //Pagamenti
+      //PAGAMENTI
       'payment_select_people_title': 'Mitglieder auswählen',
       'payment_select_people_subtitle': 'Wähle aus, wer die Zahlungsaufforderung erhalten soll',
       'payment_select_all': 'Alle auswählen',
       'payment_clear_all': 'Auswahl löschen',
       'payment_next': 'Weiter',
-
       'payment_create_title': 'Zahlungsaufforderung',
       'payment_recipients_label': 'Empfänger',
       'payment_amount_label': 'Betrag',
@@ -1337,35 +1308,30 @@ class AppLocalizations {
       'payment_note_hint': 'z.B. Monatsbeitrag / Platz / Trikots...',
       'payment_due_date_label': 'Fälligkeitsdatum (optional)',
       'payment_pick_date': 'Datum wählen',
-
       'payment_send_request': 'Senden',
       'payment_creating': 'Senden...',
       'payment_request_created_success': 'Anfrage erfolgreich erstellt!',
       'payment_invalid_amount_error': 'Bitte einen gültigen Betrag eingeben',
       'payment_missing_fields_error': 'Bitte alle Pflichtfelder ausfüllen',
       'payment_no_recipients_error': 'Wähle mindestens eine Person aus',
-
       "home_no_payments": "Keine Zahlungsanforderungen.",
       "payments_for_you_title": "Anfragen für dich",
       "payments_created_by_you_title": "Von dir erstellt",
       "payment_default_title": "Zahlungsanforderung",
       "payment_open_details_placeholder": "Zahlungsdetails folgen in Kürze",
-
       "payment_status_pending": "Ausstehend",
       "payment_status_paid": "Bezahlt",
       "payment_status_partial": "Teilweise",
       "payment_targets_paid_hint": "bezahlt",
-
       "label_admin": "Admin",
       "payment_admin_only_error": "Nur der Admin kann Zahlungsanforderungen erstellen.",
-
       "payment_delete_title": "Anfrage löschen",
       "payment_delete_confirm": "Möchtest du diese Zahlungsanforderung für die Gruppe \"{groupName}\" wirklich löschen?",
       "payment_deleted_success": "Zahlungsanforderung gelöscht.",
       "button_delete": "Löschen",
     },
 
-    // 🇧🇷 PORTUGUESE
+    //PORTOGHESE
     'pt': {
       'app_title': 'Grouply - Gestão de Equipes',
       'create_post_title': 'Criar publicação',
@@ -1377,7 +1343,6 @@ class AppLocalizations {
       'btn_publish': 'Publicar',
       'post_created_success': 'Publicação criada com sucesso!',
       'error_no_group_selected': 'Nenhum grupo selecionado',
-      // ... (Resto delle chiavi PT) ...
       'home_tab_events': 'Eventos',
       'home_tab_posts': 'Publicações',
       'home_tab_polls': 'Enquetes',
@@ -1558,7 +1523,7 @@ class AppLocalizations {
       'error_email_in_use': 'Este e-mail já está em uso',
       'error_weak_password': 'Senha muito fraca',
 
-      //Messaggi
+      //MESSAGGI
       'messages_empty_title': 'Sem chats',
       'messages_empty_subtitle': 'Entre em um grupo para começar a conversar.',
       'chat_empty': 'Ainda não há mensagens. Escreva a primeira!',
@@ -1568,7 +1533,7 @@ class AppLocalizations {
       'chat_no_messages_yet': 'Ainda não há mensagens',
       'chat_message_deleted_or_empty': '(mensagem vazia)',
 
-      //Sondaggi
+      //SONDAGGI
       'create_poll_title': 'Criar enquete',
       'poll_question_label': 'Pergunta',
       'poll_question_hint': 'Ex. Quem vai ao treino?',
@@ -1588,13 +1553,12 @@ class AppLocalizations {
       "poll_delete_confirm": "Tem certeza de que deseja eliminar esta enquete do grupo {groupName}?",
       "poll_deleted_success": "Enquete eliminada.",
 
-      //Pagamenti
+      //PAGAMENTI
       'payment_select_people_title': 'Selecionar membros',
       'payment_select_people_subtitle': 'Escolha quem vai receber a solicitação de pagamento',
       'payment_select_all': 'Selecionar todos',
       'payment_clear_all': 'Limpar',
       'payment_next': 'Avançar',
-
       'payment_create_title': 'Solicitação de pagamento',
       'payment_recipients_label': 'Destinatários',
       'payment_amount_label': 'Valor',
@@ -1603,28 +1567,23 @@ class AppLocalizations {
       'payment_note_hint': 'Ex: Mensalidade / Campo / Uniformes...',
       'payment_due_date_label': 'Vencimento (opcional)',
       'payment_pick_date': 'Escolher data',
-
       'payment_send_request': 'Enviar solicitação',
       'payment_creating': 'Enviando...',
       'payment_request_created_success': 'Solicitação criada com sucesso!',
       'payment_invalid_amount_error': 'Informe um valor válido',
       'payment_missing_fields_error': 'Preencha todos os campos obrigatórios',
       'payment_no_recipients_error': 'Selecione pelo menos uma pessoa',
-
       "home_no_payments": "Nenhum pedido de pagamento.",
       "payments_for_you_title": "Pedidos para você",
       "payments_created_by_you_title": "Criados por você",
       "payment_default_title": "Pedido de pagamento",
       "payment_open_details_placeholder": "Detalhes do pagamento em breve",
-
       "payment_status_pending": "Pendente",
       "payment_status_paid": "Pago",
       "payment_status_partial": "Parcial",
       "payment_targets_paid_hint": "pagos",
-
       "label_admin": "Admin",
       "payment_admin_only_error": "Apenas o administrador pode criar solicitações de pagamento.",
-
       "payment_delete_title": "Eliminar pedido",
       "payment_delete_confirm": "Tens a certeza de que queres eliminar este pedido de pagamento do grupo \"{groupName}\"?",
       "payment_deleted_success": "Pedido de pagamento eliminado.",

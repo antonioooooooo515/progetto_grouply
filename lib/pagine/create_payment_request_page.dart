@@ -149,8 +149,8 @@ class _CreatePaymentRequestPageState extends State<CreatePaymentRequestPage> {
         SnackBar(content: Text(loc.t('payment_request_created_success'))),
       );
 
-      Navigator.pop(context); // torna a selezione
-      Navigator.pop(context); // torna al gruppo
+      Navigator.pop(context);
+      Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

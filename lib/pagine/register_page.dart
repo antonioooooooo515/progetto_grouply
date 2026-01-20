@@ -167,7 +167,7 @@ class _RegisterPageState extends State<RegisterPage> {
         title: Row(
           children: [
             Image.asset(
-              'lib/assets/logo/logo_nobg.png', // Logo
+              'lib/assets/logo/logo_nobg.png',
               height: 40,
               fit: BoxFit.contain,
             ),
@@ -346,7 +346,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 16),
 
-                      // PULSANTE GOOGLE CON LOGO REALE
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
@@ -372,7 +371,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                           )
                               : Image.asset(
-                            'lib/assets/logo/google_logo.png', // 👈 LOGO REALE
+                            'lib/assets/logo/google_logo.png',
                             height: 24,
                           ),
                           label: Text(

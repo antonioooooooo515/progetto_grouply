@@ -33,10 +33,10 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
   bool _isSaving = false;
 
-  // Dati Foto
+  //FOTO
   String? _imageBase64;
 
-  // Dati Allegato
+  //ALLEGATO
   String? _fileName;
   String? _fileBase64;
   int? _fileSize;
@@ -48,11 +48,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
     super.dispose();
   }
 
-  // --- FUNZIONE PICK IMAGE (MODIFICATA PER RISPARMIARE SPAZIO) ---
   Future<void> _pickImage() async {
     final picker = ImagePicker();
 
-    // ⚠️ MODIFICA: Ridotto a 800x800 e qualità 50 per stare sotto 1MB (limite Firestore)
     final picked = await picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 50,
@@ -63,8 +61,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
     if (picked != null) {
       final bytes = await picked.readAsBytes();
 
-      // ⚠️ CONTROLLO SICUREZZA: Se > 700KB (circa), blocchiamo per evitare crash Firestore
-      // Il limite Firestore è 1MB, ma il Base64 aumenta la dimensione del ~33%.
+      //CONTROLLO: Se > circa 700KB si blocca per evitare un crash di Firestore
+      // Il limite di Firestore è 1MB, ma il Base64 aumenta la dimensione del ~33%.
       final sizeInKb = bytes.lengthInBytes / 1024;
       if (sizeInKb > 700) {
         if (!mounted) return;
@@ -84,7 +82,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
     }
   }
 
-  // --- FUNZIONE PICK FILE ---
   Future<void> _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -106,7 +103,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
       }
 
       if (fileBytes != null) {
-        // Controllo preventivo anche per i file (limite ~700KB per sicurezza)
+        //Controllo preventivo anche per i file (limite ~700KB per sicurezza)
         final sizeInKb = fileBytes.lengthInBytes / 1024;
         if (sizeInKb > 750) {
           if (!mounted) return;
@@ -161,7 +158,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
         'description': _descController.text.trim(),
         'createdAt': FieldValue.serverTimestamp(),
 
-        // Salviamo ENTRAMBI se presenti
         'imageBase64': _imageBase64,
         'fileName': _fileName,
         'fileBase64': _fileBase64,
@@ -206,7 +202,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // CARD "PUBBLICA IN"
             Text(loc.t('label_publish_in'), style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Card(
@@ -223,7 +218,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
             ),
             const SizedBox(height: 24),
 
-            // CAMPI TESTO
             TextField(
               controller: _titleController,
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
@@ -245,9 +239,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
             ),
             const SizedBox(height: 16),
 
-            // --- ANTEPRIMA MEDIA ---
 
-            // 1. FOTO
+            //1 FOTO
             if (_imageBase64 != null)
               Stack(
                 children: [
@@ -273,7 +266,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
             if (_imageBase64 != null && _fileName != null)
               const SizedBox(height: 16),
 
-            // 2. FILE ALLEGATO
+            //2.FILE ALLEGATO
             if (_fileName != null)
               Container(
                 margin: const EdgeInsets.only(top: 10),
@@ -307,7 +300,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
             const SizedBox(height: 16),
 
-            // BOTTONI SCELTA
             Row(
               children: [
                 Expanded(

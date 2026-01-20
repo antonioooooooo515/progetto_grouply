@@ -15,7 +15,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
 
-        // ✅ necessario per flutter_local_notifications (desugaring)
         isCoreLibraryDesugaringEnabled = true
     }
 
@@ -40,7 +39,6 @@ android {
 }
 
 dependencies {
-    // ✅ desugaring libs
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 

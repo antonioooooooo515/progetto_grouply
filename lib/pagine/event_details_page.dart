@@ -6,13 +6,13 @@ import '../localization/app_localizations.dart';
 class EventDetailsPage extends StatefulWidget {
   final String eventId;
   final bool isAdmin;
-  final String groupSport; // 👈 NUOVO: Serve per l'icona dinamica
+  final String groupSport;
 
   const EventDetailsPage({
     super.key,
     required this.eventId,
     required this.isAdmin,
-    this.groupSport = '', // Opzionale, default vuoto
+    this.groupSport = '',
   });
 
   @override
@@ -22,7 +22,6 @@ class EventDetailsPage extends StatefulWidget {
 class _EventDetailsPageState extends State<EventDetailsPage> {
   String? _localStatus;
 
-  // Funzione icona dinamica
   IconData _getSportIcon(String sportName) {
     final s = sportName.toLowerCase();
     if (s.contains('pallavolo') || s.contains('volley')) return Icons.sports_volleyball;
@@ -107,14 +106,12 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         final String location = eventData['location'] ?? '-';
         final String meetingPoint = eventData['meetingPoint'] ?? '-';
 
-        // 🔥 LOGICA TITOLO E ICONA (Uguale alla Dashboard)
         final String? customTitle = eventData['title'];
         String title = "Evento";
         IconData headerIcon = Icons.event;
         Color headerColor = colors.primary;
 
         if (customTitle != null && customTitle.isNotEmpty) {
-          // Evento custom (Allenamento)
           title = customTitle;
           headerIcon = Icons.fitness_center;
           headerColor = Colors.teal;
@@ -131,7 +128,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           headerIcon = Icons.emoji_events;
           headerColor = Colors.amber;
         } else {
-          // Fallback (Amichevole) con icona sport
           title = "${eventData['homeTeam'] ?? '?'} vs ${eventData['awayTeam'] ?? '?'}";
           headerIcon = _getSportIcon(widget.groupSport);
           headerColor = Colors.green;
@@ -157,7 +153,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. HEADER CON ICONA GRANDE E TITOLO
                 Center(
                   child: Column(
                     children: [
@@ -186,10 +181,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 ),
                 const SizedBox(height: 32),
 
-                // 2. DETTAGLI
                 _buildDetailRow(context, Icons.location_on, loc.t('label_location'), location), // 👈 Usa label generica
 
-                // Mostra ritrovo solo se c'è
                 if (meetingPoint != '-' && meetingPoint.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   _buildDetailRow(context, Icons.place, loc.t('label_meeting_point'), meetingPoint),
@@ -202,7 +195,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
                 const SizedBox(height: 40),
 
-                // 3. PRESENZA
                 Text(
                   loc.t('status_title'),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colors.onSurface),

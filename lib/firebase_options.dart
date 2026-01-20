@@ -18,7 +18,7 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // 🌐 WEB
+  //WEB
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: "AIzaSyABtE542Tjl37l-q4u65hWELHFFDAN14m8",
     appId: "1:145866469912:web:ce856118279277100ec96d",
@@ -29,7 +29,7 @@ class DefaultFirebaseOptions {
     measurementId: "G-J3SQB9VH8X",
   );
 
-  // 🤖 ANDROID
+  //ANDROID
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: "AIzaSyC_hx9nUcxskgSvZ_a9ZpOSL3NMNVdpKKY",
     appId: "1:145866469912:android:31e7b6ae035508040ec96d",
@@ -38,7 +38,7 @@ class DefaultFirebaseOptions {
     storageBucket: "grouply-team-manager.firebasestorage.app",
   );
 
-  // 🍎 iOS
+  //iOS
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: "AIzaSyCS5ec27kCeooGWJzC1nkgj0AEwEh5keyI",
     appId: "1:145866469912:ios:fef7553c47d805ae0ec96d",

@@ -17,7 +17,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 }
 
-/// Apre la bacheca (dashboard) del gruppo partendo da groupId.
+//Apre la dashboard del gruppo avendo il groupId
 Future<void> _openGroupDashboard(String groupId) async {
   final snap =
   await FirebaseFirestore.instance.collection('groups').doc(groupId).get();
@@ -46,7 +46,7 @@ Future<void> _openGroupDashboard(String groupId) async {
   );
 }
 
-/// Apre la chat del gruppo partendo da groupId.
+//Apre la chat del gruppo avendo il groupId
 Future<void> _openGroupChat(String groupId) async {
   final snap =
   await FirebaseFirestore.instance.collection('groups').doc(groupId).get();
@@ -69,7 +69,7 @@ Future<void> _openGroupChat(String groupId) async {
   );
 }
 
-/// Apre la sezione pagamenti (non richiede parametri).
+//Apre la sezione pagamenti
 void _openPaymentsPage() {
   navigatorKey.currentState?.push(
     MaterialPageRoute(
@@ -78,34 +78,29 @@ void _openPaymentsPage() {
   );
 }
 
-/// Navigazione da notifica: eseguila SOLO dopo che il Navigator è pronto.
+//Navigazione da notifica
 void _handleNotificationTap(Map<String, dynamic> data) {
   debugPrint('NOTIF TAP -> data = $data');
 
-  // Esegui dopo il primo frame (risolve il caso "terminated -> tap")
   WidgetsBinding.instance.addPostFrameCallback((_) async {
-    // piccolo retry se il navigator non è ancora pronto
     if (navigatorKey.currentState == null) {
       await Future.delayed(const Duration(milliseconds: 120));
     }
 
     final rawType = (data['type'] ?? '').toString().trim();
-    final type = rawType.toLowerCase(); // normalizza
+    final type = rawType.toLowerCase();
     final groupId = (data['groupId'] ?? '').toString().trim();
 
-    // ✅ Pagamenti: accetta singolare e plurale
     if (type == 'payment_request' || type == 'payment_requests') {
       _openPaymentsPage();
       return;
     }
 
-    // ✅ Bacheca gruppo (post/evento/sondaggio)
     if (type == 'group_content' && groupId.isNotEmpty) {
       await _openGroupDashboard(groupId);
       return;
     }
 
-    // ✅ Chat gruppo: accetta singolare e plurale
     if ((type == 'chat_message' || type == 'chat_messages') &&
         groupId.isNotEmpty) {
       await _openGroupChat(groupId);

@@ -4,7 +4,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'theme_modifier.dart';
 import 'localization/app_localizations.dart';
 
-// Pagine
 import 'pagine/splash_page.dart';
 import 'pagine/login_page.dart';
 import 'pagine/register_page.dart';
@@ -12,7 +11,6 @@ import 'pagine/home_page.dart';
 import 'pagine/settings_page.dart';
 import 'pagine/profile_settings_page.dart';
 
-// Chiave Globale per controllare la navigazione (la manteniamo, è utile)
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class MyApp extends StatelessWidget {
@@ -20,12 +18,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Ascolta i cambiamenti di LINGUA
     return ValueListenableBuilder<Locale>(
       valueListenable: AppLanguage.locale,
       builder: (context, locale, _) {
 
-        // 2. Ascolta i cambiamenti di TEMA
         return ValueListenableBuilder<ThemeMode>(
           valueListenable: AppTheme.themeMode,
           builder: (context, themeMode, _) {
@@ -35,15 +31,14 @@ class MyApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               title: 'Grouply - Team Manager',
 
-              // --- GESTIONE LINGUA ---
               locale: locale,
               supportedLocales: const [
-                Locale('it'), // Italiano
-                Locale('en'), // Inglese
-                Locale('es'), // Spagnolo
-                Locale('fr'), // Francese
-                Locale('de'), // Tedesco
-                Locale('pt'), // Portoghese
+                Locale('it'), //Italiano
+                Locale('en'), //Inglese
+                Locale('es'), //Spagnolo
+                Locale('fr'), //Francese
+                Locale('de'), //Tedesco
+                Locale('pt'), //Portoghese
               ],
               localizationsDelegates: const [
                 AppLocalizationsDelegate(),
@@ -52,7 +47,7 @@ class MyApp extends StatelessWidget {
                 GlobalCupertinoLocalizations.delegate,
               ],
 
-              // --- GESTIONE TEMA ---
+              //GESTIONE TEMA
               themeMode: themeMode,
 
               theme: ThemeData(
@@ -87,9 +82,7 @@ class MyApp extends StatelessWidget {
                 ),
               ),
 
-              // --- ROTTE ---
-              // La SplashPage parte SOLO all'avvio dell'app (cold start)
-              // Quando l'app va in background e torna su, Android/iOS mantengono l'ultima schermata.
+              //ROUTES
               initialRoute: '/',
 
               routes: {

@@ -25,19 +25,17 @@ class WelcomeHeader extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // ⭐ TITOLO PIÙ GRANDE E PIÙ BOLD
         Text(
           title,
           style: TextStyle(
-            fontSize: 32,          // 👈 PIÙ GRANDE
-            fontWeight: FontWeight.w800, // 👈 PIÙ SPESSO (usa il tuo Poppins Bold/ExtraBold)
+            fontSize: 32,
+            fontWeight: FontWeight.w800,
             color: colors.onSurface,
           ),
         ),
 
         const SizedBox(height: 10),
 
-        // ⭐ SOTTOTITOLO MEDIUM, PIÙ PICCOLO
         Text(
           subtitle,
           textAlign: TextAlign.center,

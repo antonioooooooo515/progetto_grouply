@@ -14,7 +14,7 @@ class BigButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color fixedColor = Color(0xFFE91E63); // colore fisso fucsia/magenta
+    const Color fixedColor = Color(0xFFE91E63);
 
     return SizedBox(
       width: double.infinity,

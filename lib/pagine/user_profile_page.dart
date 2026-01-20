@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:convert'; // Per decodificare la foto
+import 'dart:convert';
 
 import '../localization/app_localizations.dart';
 
@@ -14,9 +14,7 @@ class UserProfilePage extends StatelessWidget {
     required this.userName,
   });
 
-  // 🔥 FUNZIONE INTELLIGENTE PER L'ICONA DELLO SPORT
   IconData _getSportIcon(String sportName) {
-    // Convertiamo in minuscolo per evitare problemi (es. "Calcio" vs "calcio")
     final s = sportName.toLowerCase();
 
     if (s.contains('pallavolo') || s.contains('volley')) {
@@ -39,7 +37,6 @@ class UserProfilePage extends StatelessWidget {
       return Icons.sports_soccer;
     }
 
-    // Icona generica se lo sport non è riconosciuto
     return Icons.sports_score;
   }
 
@@ -55,24 +52,20 @@ class UserProfilePage extends StatelessWidget {
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
         builder: (context, snapshot) {
-          // 1. Caricamento
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // 2. Errore o Utente non trovato
           if (!snapshot.hasData || !snapshot.data!.exists) {
             return const Center(child: Text("Profilo non trovato"));
           }
 
-          // 3. Dati Utente
           final data = snapshot.data!.data() as Map<String, dynamic>;
           final String name = data['displayName'] ?? 'Senza nome';
           final String role = data['role'] ?? '-';
           final String sport = data['sport'] ?? '-'; // Se vuoto mette "-"
           final String? profileImageBase64 = data['profileImageBase64'];
 
-          // Costruzione data di nascita
           String birthDate = "-";
           if (data['birthDay'] != null && data['birthMonth'] != null && data['birthYear'] != null) {
             birthDate = "${data['birthDay']} ${data['birthMonth']} ${data['birthYear']}";
@@ -89,7 +82,7 @@ class UserProfilePage extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                // FOTO PROFILO GRANDE
+                //FOTO PROFILO
                 CircleAvatar(
                   radius: 60,
                   backgroundColor: colors.primary.withOpacity(0.1),
@@ -100,7 +93,7 @@ class UserProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // NOME
+                //NOME
                 Text(
                   name,
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -108,31 +101,31 @@ class UserProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
 
-                // 🔥 ORDINE CAMBIATO: PRIMA LO SPORT
+                //SPORT
                 _buildInfoCard(
                     context,
-                    _getSportIcon(sport), // Usa l'icona dinamica qui!
+                    _getSportIcon(sport),
                     loc.t('label_sport'),
                     sport
                 ),
 
                 const SizedBox(height: 12),
 
-                // POI IL RUOLO
+                //RUOLO
                 _buildInfoCard(
                     context,
-                    Icons.person_outline, // Icona generica per il ruolo
+                    Icons.person_outline,
                     loc.t('label_role'),
                     role
                 ),
 
                 const SizedBox(height: 12),
 
-                // INFINE DATA DI NASCITA
+                //DATA DI NASCITA
                 _buildInfoCard(
                     context,
                     Icons.cake,
-                    "Data di nascita", // (Puoi aggiungere questa chiave alle traduzioni se vuoi)
+                    "Data di nascita",
                     birthDate
                 ),
               ],
@@ -144,7 +137,6 @@ class UserProfilePage extends StatelessWidget {
   }
 
   Widget _buildInfoCard(BuildContext context, IconData icon, String label, String value) {
-    // Se il valore è vuoto o "-", rendiamo la card un po' più trasparente
     final isUnknown = (value == '-' || value.isEmpty);
     final theme = Theme.of(context);
 

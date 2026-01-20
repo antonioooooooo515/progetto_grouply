@@ -134,7 +134,6 @@ class _PaymentSelectRecipientsPageState
           (groupData?['members'] ?? []) as List<dynamic>;
           final membersIdsRaw = membersDyn.map((e) => e.toString()).toList();
 
-          // Escludo me stesso dalla selezione
           final memberIds =
           membersIdsRaw.where((id) => id != currentUserId).toList();
 
@@ -182,7 +181,6 @@ class _PaymentSelectRecipientsPageState
                           ),
                           const SizedBox(height: 10),
 
-                          // ✅ FIX OVERFLOW: uso Wrap invece di Row
                           Wrap(
                             spacing: 10,
                             runSpacing: 8,

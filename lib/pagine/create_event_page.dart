@@ -7,7 +7,7 @@ import 'location_picker_page.dart';
 
 class CreateEventPage extends StatefulWidget {
   final String groupId;
-  final String groupSport; // Serve per l'icona dinamica
+  final String groupSport;
 
   const CreateEventPage({
     super.key,
@@ -52,7 +52,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
     super.dispose();
   }
 
-  // 🔥 FUNZIONE PER ICONA DINAMICA
+  //ICONA DINAMICA
   IconData _getSportIcon() {
     final s = widget.groupSport.toLowerCase();
     if (s.contains('pallavolo') || s.contains('volley')) return Icons.sports_volleyball;
@@ -237,13 +237,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // 1. TIPO DI PARTITA (Icona Dinamica)
+            //1.TIPO DI PARTITA
             DropdownButtonFormField<String>(
               value: _selectedMatchType,
               decoration: InputDecoration(
                 labelText: loc.t('label_match_type'),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                // 🔥 ORA L'ICONA È DINAMICA!
                 prefixIcon: Icon(_getSportIcon()),
               ),
               items: matchTypes.map((type) {
@@ -256,7 +255,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
             ),
             const SizedBox(height: 16),
 
-            // 2. SQUADRE
+            //2.SQUADRE
             if (_selectedMatchType == 'tournament')
               _buildTournamentSection(loc, colors)
             else
@@ -264,7 +263,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
             const SizedBox(height: 16),
 
-            // 3. DATA E ORA PARTITA
+            //3.DATA E ORA PARTITA
             Row(
               children: [
                 Expanded(
@@ -310,7 +309,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
             ),
             const SizedBox(height: 16),
 
-            // 4. LUOGO PARTITA
+            //4.LUOGO PARTITA
             TextField(
               controller: _matchLocationController,
               readOnly: true,
@@ -325,7 +324,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
             ),
             const SizedBox(height: 16),
 
-            // 5. RITROVO: LUOGO + ORARIO
+            //5.RITROVO PARTITA
             Row(
               children: [
                 Expanded(

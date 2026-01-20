@@ -17,7 +17,7 @@ import 'event_details_page.dart';
 import 'member_list_page.dart';
 import '../widgets/soft_card.dart';
 
-// ✅ NOTIFICHE FOREGROUND
+//NOTIFICHE FOREGROUND
 import '../services/push_notification_service.dart';
 
 class GroupDashboardPage extends StatefulWidget {
@@ -44,12 +44,11 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // --- STATO SELEZIONE ---
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
-  String? _selectionType; // 'event' oppure 'post'
+  String? _selectionType;
 
-  // ✅ Listener foreground (Firestore)
+  //Listener foreground (Firestore)
   StreamSubscription<QuerySnapshot>? _eventsSub;
   StreamSubscription<QuerySnapshot>? _postsSub;
   StreamSubscription<QuerySnapshot>? _pollsSub;
@@ -70,7 +69,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
       }
     });
 
-    // ✅ Avvio notifiche FOREGROUND (solo mobile)
+    //Avvio notifiche FOREGROUND
     if (!kIsWeb) {
       _startForegroundGroupNotifications();
     }
@@ -119,7 +118,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
   }
 
   void _startForegroundGroupNotifications() {
-    // EVENTI (senza orderBy per evitare crash se qualche campo non esiste)
+    //EVENTI
     _eventsSub = FirebaseFirestore.instance
         .collection('events')
         .where('groupId', isEqualTo: widget.groupId)
@@ -158,7 +157,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
       );
     });
 
-    // POST
+    //POST
     _postsSub = FirebaseFirestore.instance
         .collection('posts')
         .where('groupId', isEqualTo: widget.groupId)
@@ -193,7 +192,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
       );
     });
 
-    // SONDAGGI
+    //SONDAGGI
     _pollsSub = FirebaseFirestore.instance
         .collection('polls')
         .where('groupId', isEqualTo: widget.groupId)
@@ -231,7 +230,6 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
     });
   }
 
-  // --- LOGICA SELEZIONE ---
 
   void _startSelection(String id, String type) {
     final user = FirebaseAuth.instance.currentUser;
@@ -335,7 +333,6 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
     }
   }
 
-  // --- FAB e ALTRE FUNZIONI ---
 
   void _showAddOptions(AppLocalizations loc, ColorScheme colors) {
     final String currentSport = widget.groupSport;
@@ -359,7 +356,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
               ),
               const SizedBox(height: 16),
 
-              // EVENTO
+              //EVENTO
               ListTile(
                 leading: CircleAvatar(
                     backgroundColor: Colors.blue.withOpacity(0.1),
@@ -381,7 +378,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
                 },
               ),
 
-              // POST
+              //POST
               ListTile(
                 leading: CircleAvatar(
                     backgroundColor: Colors.orange.withOpacity(0.1),
@@ -404,7 +401,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
                 },
               ),
 
-              // SONDAGGIO
+              //SONDAGGIO
               ListTile(
                 leading: CircleAvatar(
                     backgroundColor: Colors.purple.withOpacity(0.1),
@@ -426,7 +423,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
                 },
               ),
 
-              // PAGAMENTO ✅
+              //PAGAMENTO
               ListTile(
                 leading: CircleAvatar(
                     backgroundColor: Colors.green.withOpacity(0.1),
@@ -545,7 +542,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
         controller: _tabController,
         physics: _isSelectionMode ? const NeverScrollableScrollPhysics() : null,
         children: [
-          // 1. BACHECA
+          //1.BACHECA
           _GroupBoardContent(
             groupId: widget.groupId,
             groupSport: widget.groupSport,
@@ -557,10 +554,10 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
             onStartSelection: _startSelection,
           ),
 
-          // 2. MEMBRI
+          //2.MEMBRI
           MemberListPage(groupId: widget.groupId, groupName: widget.groupName),
 
-          // 3. INFO
+          //3.INFO
           _GroupInfoContent(
             groupId: widget.groupId,
             groupName: widget.groupName,
@@ -585,7 +582,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
 }
 
 // ----------------------------------------------------------------------
-// WIDGET BACHECA (Eventi + Post)
+// WIDGET BACHECA
 // ----------------------------------------------------------------------
 class _GroupBoardContent extends StatelessWidget {
   final String groupId;
@@ -618,7 +615,7 @@ class _GroupBoardContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // EVENTI
+          //EVENTI
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('events')
@@ -692,7 +689,7 @@ class _GroupBoardContent extends StatelessWidget {
             },
           ),
 
-          // POST
+          //POST
           Text(loc.t('home_tab_posts'),
               style:
               const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),

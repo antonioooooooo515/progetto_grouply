@@ -75,7 +75,6 @@ class _GroupChatPageState extends State<GroupChatPage> {
 
       _controller.clear();
 
-      // porta giù (lista è reverse=true, quindi offset 0 è il "bottom")
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           0,
@@ -163,7 +162,6 @@ class _GroupChatPageState extends State<GroupChatPage> {
             ),
           ),
 
-          // input
           SafeArea(
             top: false,
             child: Container(

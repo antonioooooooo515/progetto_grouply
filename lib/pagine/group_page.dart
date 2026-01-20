@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../localization/app_localizations.dart';
-
-// 👇 Importa la dashboard
 import 'group_dashboard_page.dart';
 
 class GroupPage extends StatelessWidget {
@@ -79,7 +77,7 @@ class GroupPage extends StatelessWidget {
 
               final groupName = groupData['name'] ?? 'Gruppo';
               final sport = groupData['sport'] ?? '';
-              final inviteCode = groupData['inviteCode'] ?? '???'; // 👈 PRENDIAMO IL CODICE CORTO
+              final inviteCode = groupData['inviteCode'] ?? '???';
               final members = groupData['members'] as List<dynamic>? ?? [];
               final memberCount = members.length;
               final adminId = groupData['adminId'] ?? '';
@@ -93,7 +91,6 @@ class GroupPage extends StatelessWidget {
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: () {
-                    // 👇 CORREZIONE: Passiamo inviteCode!
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -102,7 +99,7 @@ class GroupPage extends StatelessWidget {
                           groupName: groupName,
                           groupSport: sport,
                           adminId: adminId,
-                          inviteCode: inviteCode, // 👈 ECCOLO!
+                          inviteCode: inviteCode,
                         ),
                       ),
                     );

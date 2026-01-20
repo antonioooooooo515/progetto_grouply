@@ -1,4 +1,4 @@
-import 'dart:convert'; // per base64
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,7 +25,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   String? _selectedMonth;
   String? _selectedGender;
 
-  // stringa base64 dell'immagine profilo
   String? _profileImageBase64;
 
   bool _isLoading = true;            // carica dati iniziali
@@ -124,7 +123,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     );
   }
 
-  // --- MODIFICATA PER GESTIRE IL LIMITE FIREBASE ---
   Future<void> _changePhoto() async {
     final loc = AppLocalizations.of(context);
 
@@ -142,7 +140,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
       final picker = ImagePicker();
       final picked = await picker.pickImage(
         source: ImageSource.gallery,
-        // ⚠️ Riduzione aggressiva per profilo
         maxWidth: 500,
         maxHeight: 500,
         imageQuality: 60,
@@ -152,7 +149,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
       final bytes = await picked.readAsBytes();
 
-      // ⚠️ Controllo dimensione
       if ((bytes.lengthInBytes / 1024) > 700) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Immagine troppo pesante per Firestore. Riprova.")),
@@ -221,7 +217,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         'gender': _selectedGender,
         'sport': _sportController.text.trim(),
         'role': _roleController.text.trim(),
-        // L'immagine è già stata salvata da _changePhoto, ma la rimandiamo per sicurezza se presente
         if (_profileImageBase64 != null) 'profileImageBase64': _profileImageBase64,
         'email': user.email,
         'updatedAt': FieldValue.serverTimestamp(),
@@ -347,7 +342,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
           ),
           const SizedBox(height: 16),
 
-          // Giorno, mese, anno di nascita
           Row(
             children: [
               Expanded(
@@ -392,7 +386,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
           const SizedBox(height: 16),
 
-          // Genere
           Align(
             alignment: Alignment.centerLeft,
             child: SizedBox(
@@ -418,7 +411,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
           const SizedBox(height: 16),
 
-          // Sport praticato
           TextField(
             controller: _sportController,
             decoration: _roundedInputDecoration(loc.t('label_sport')),
@@ -426,7 +418,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
           const SizedBox(height: 16),
 
-          // Ruolo del giocatore
           TextField(
             controller: _roleController,
             decoration: _roundedInputDecoration(loc.t('label_role')),

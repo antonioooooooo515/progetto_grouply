@@ -202,7 +202,6 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // 1. NOME EVENTO (Default "Allenamento")
             TextField(
               controller: _nameController,
               decoration: InputDecoration(
@@ -213,7 +212,6 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
             ),
             const SizedBox(height: 16),
 
-            // 2. DATA E ORA
             Row(
               children: [
                 Expanded(
@@ -259,7 +257,6 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
             ),
             const SizedBox(height: 16),
 
-            // 3. LUOGO (Singolo campo)
             TextField(
               controller: _locationController,
               readOnly: true,
@@ -274,7 +271,6 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
             ),
             const SizedBox(height: 32),
 
-            // 4. RIPETIZIONE (In fondo)
             DropdownButtonFormField<String>(
               value: _selectedRecurrence,
               decoration: InputDecoration(
@@ -299,7 +295,6 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
               ),
             ),
 
-            // 5. BOTTONE CREA
             BigButton(
               text: loc.t('button_create'),
               isLoading: _isSaving,

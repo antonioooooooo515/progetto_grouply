@@ -108,7 +108,6 @@ class PaymentsPage extends StatelessWidget {
     }
   }
 
-  /// ✅ ADMIN: segna l'intera richiesta come "pagata" (tutti i recipients -> paid)
   Future<void> _setPaymentPaidByAdmin(
       BuildContext context, {
         required String paymentId,
@@ -281,7 +280,6 @@ class PaymentsPage extends StatelessWidget {
 
                   final recipients = _safeStringList(data['recipients']);
 
-                  // ✅ L'utente vede lo stato personale SOLO se è tra i recipients
                   final bool isRecipient = recipients.contains(user.uid);
 
                   final paidCount = _countPaidTargets(data, recipients);
@@ -334,7 +332,6 @@ class PaymentsPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // HEADER
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -365,7 +362,6 @@ class PaymentsPage extends StatelessWidget {
                                 ),
                               ),
 
-                              // CHIP + MENU (admin)
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -433,7 +429,6 @@ class PaymentsPage extends StatelessWidget {
 
                           const SizedBox(height: 10),
 
-                          // NOTE + AMOUNT
                           Row(
                             children: [
                               Expanded(
@@ -480,7 +475,6 @@ class PaymentsPage extends StatelessWidget {
 
                           const SizedBox(height: 12),
 
-                          // PROGRESS GLOBALE
                           if (total > 0) ...[
                             ClipRRect(
                               borderRadius: BorderRadius.circular(20),
@@ -496,7 +490,6 @@ class PaymentsPage extends StatelessWidget {
                             ),
                           ],
 
-                          // ✅ STATO PERSONALE: SOLO se NON admin e SOLO se è recipient
                           if (!isAdminOfGroup && isRecipient) ...[
                             const SizedBox(height: 10),
                             Container(
@@ -537,7 +530,6 @@ class PaymentsPage extends StatelessWidget {
                             ),
                           ],
 
-                          // DETTAGLI DESTINATARI SOLO ADMIN
                           if (isAdminOfGroup &&
                               recipients.isNotEmpty &&
                               recipientNames.isNotEmpty) ...[
@@ -592,7 +584,6 @@ class PaymentsPage extends StatelessWidget {
                             ),
                           ],
 
-                          // PULSANTE ADMIN: "SEGNA PAGATO"
                           if (isAdminOfGroup) ...[
                             const SizedBox(height: 10),
                             Align(
