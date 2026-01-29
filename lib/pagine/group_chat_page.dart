@@ -123,7 +123,7 @@ class _GroupChatPageState extends State<GroupChatPage> {
 
                 if (snapshot.hasError) {
                   return Center(
-                    child: Text("${loc.t('chat_error_generic')}: ${snapshot.error}"),
+                    child: Text("${loc.t('error')}: ${snapshot.error}"),
                   );
                 }
 

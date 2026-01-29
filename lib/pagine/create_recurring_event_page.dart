@@ -123,9 +123,9 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
 
     try {
       int occurrences = 1;
-      if (_selectedRecurrence == 'daily') occurrences = 30; // 1 mese
-      if (_selectedRecurrence == 'weekly') occurrences = 12; // 3 mesi
-      if (_selectedRecurrence == 'monthly') occurrences = 3;  // 3 mesi
+      if (_selectedRecurrence == 'daily') occurrences = 30;
+      if (_selectedRecurrence == 'weekly') occurrences = 12;
+      if (_selectedRecurrence == 'monthly') occurrences = 3;
 
       final batch = FirebaseFirestore.instance.batch();
 
@@ -152,7 +152,7 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
           'title': _nameController.text.trim(),
           'matchType': 'training',
           'startDateTime': Timestamp.fromDate(eventDateTime),
-          'location': _locationController.text.trim(), // Unico campo location
+          'location': _locationController.text.trim(),
           'createdBy': user.uid,
           'createdAt': FieldValue.serverTimestamp(),
           'isRecurring': true,
@@ -174,7 +174,7 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Errore: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text("${loc.t('error')}: $e"), backgroundColor: Colors.red),
       );
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -262,7 +262,7 @@ class _CreateRecurringEventPageState extends State<CreateRecurringEventPage> {
               readOnly: true,
               onTap: _pickLocation,
               decoration: InputDecoration(
-                labelText: loc.t('label_location'), // Usa la chiave generica
+                labelText: loc.t('label_location'),
                 hintText: loc.t('map_select_placeholder'),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 prefixIcon: const Icon(Icons.location_on, color: Colors.red),

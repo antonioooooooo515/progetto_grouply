@@ -118,7 +118,7 @@ class _PaymentSelectRecipientsPageState
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text("Errore: ${groupSnap.error}"),
+                child: Text(loc.t('error_generic_with_details', params: {'error': groupSnap.error.toString()},),),
               ),
             );
           }
@@ -153,7 +153,7 @@ class _PaymentSelectRecipientsPageState
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Text("Errore: ${membersSnap.error}"),
+                    child: Text(loc.t('error_generic_with_details', params: {'error': membersSnap.error.toString()},),),
                   ),
                 );
               }

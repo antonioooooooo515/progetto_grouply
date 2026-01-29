@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
+import 'package:progetto_grouply/localization/app_localizations.dart';
 
 class LocationPickerPage extends StatefulWidget {
   const LocationPickerPage({super.key});
@@ -15,9 +16,18 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
   final MapController _mapController = MapController();
   final TextEditingController _searchController = TextEditingController();
 
-  LatLng _currentLocation = const LatLng(41.9028, 12.4964); // Roma
-  String _address = "Tocca la mappa o cerca un indirizzo";
+  LatLng _currentLocation = const LatLng(39.3290, 16.2420); //Quattromiglia
+  String _address = '';
   bool _isLoading = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_address.isEmpty) {
+      final loc = AppLocalizations.of(context);
+      _address = loc.t('touch_map');
+    }
+  }
 
   @override
   void dispose() {
@@ -27,6 +37,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
   }
 
   Future<void> _searchPlace() async {
+    final loc = AppLocalizations.of(context);
     final query = _searchController.text.trim();
     if (query.isEmpty) return;
 
@@ -60,23 +71,24 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
             _address = displayName;
           });
         } else {
-          _showSnack("Nessun luogo trovato per '$query'");
+          _showSnack(loc.t('location_not_found_query', params: {'query': query},),);
         }
       } else {
-        throw "Errore server";
+        throw loc.t('server_error');
       }
     } catch (e) {
-      _showSnack("Errore di connessione. Controlla internet.");
+      _showSnack(loc.t('connection_error', params: {'query': query},),);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _handleTap(TapPosition tapPosition, LatLng point) async {
+    final loc = AppLocalizations.of(context);
     setState(() {
       _currentLocation = point;
       _isLoading = true;
-      _address = "Ricerca indirizzo...";
+      _address = loc.t('searching_address');
     });
 
     try {
@@ -91,7 +103,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        String foundAddress = data['display_name'] ?? "Indirizzo sconosciuto";
+        String foundAddress = data['display_name'] ?? loc.t('unknown_address');
 
         List<String> parts = foundAddress.split(',');
         if (parts.length > 2) {
@@ -102,10 +114,10 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
           _address = foundAddress;
         });
       } else {
-        setState(() => _address = "Indirizzo non trovato");
+        setState(() => _address = loc.t('address_not_found'));
       }
     } catch (e) {
-      setState(() => _address = "Errore connessione");
+      setState(() => _address = loc.t('connection_error'));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -117,6 +129,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Container(
@@ -130,7 +143,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => _searchPlace(),
             decoration: InputDecoration(
-              hintText: "Cerca città o via...",
+              hintText: loc.t('hint_location'),
               hintStyle: TextStyle(color: Colors.grey.shade500),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -196,7 +209,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: _isLoading
-                            ? const Text("Ricerca in corso...")
+                            ? Text(loc.t('searching'))
                             : Text(
                           _address,
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -219,7 +232,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text("CONFERMA POSIZIONE", style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(loc.t('confirm_position'), style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),

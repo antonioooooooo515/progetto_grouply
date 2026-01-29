@@ -50,6 +50,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
+    final loc = AppLocalizations.of(context);
 
     final picked = await picker.pickImage(
       source: ImageSource.gallery,
@@ -67,8 +68,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
       if (sizeInKb > 700) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Immagine troppo pesante! Riprova con una più piccola o fai uno screenshot."),
+          SnackBar(
+            content: Text(loc.t('image_size_error')),
             backgroundColor: Colors.red,
             duration: Duration(seconds: 4),
           ),
@@ -83,6 +84,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
   }
 
   Future<void> _pickFile() async {
+    final loc = AppLocalizations.of(context);
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'txt', 'mp4', 'mov'],
@@ -103,13 +105,13 @@ class _CreatePostPageState extends State<CreatePostPage> {
       }
 
       if (fileBytes != null) {
-        //Controllo preventivo anche per i file (limite ~700KB per sicurezza)
+        //Controllo preventivo anche per i file
         final sizeInKb = fileBytes.lengthInBytes / 1024;
         if (sizeInKb > 750) {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("File troppo grande per Firestore (Limite 1MB)."),
+            SnackBar(
+              content: Text(loc.t('file_size_error')),
               backgroundColor: Colors.red,
             ),
           );
@@ -174,9 +176,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
     } catch (e) {
       if (!mounted) return;
 
-      String errorMessage = "Errore durante il salvataggio: $e";
+      String errorMessage = '${loc.t('error_save')}: $e';
       if (e.toString().contains("larger than 1048576 bytes")) {
-        errorMessage = "Limite superato! Il post (testo + immagini) pesa più di 1MB.";
+        errorMessage = loc.t('error_post_size_limit');
       }
 
       ScaffoldMessenger.of(context).showSnackBar(

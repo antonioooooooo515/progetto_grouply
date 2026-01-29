@@ -113,6 +113,7 @@ class PaymentsPage extends StatelessWidget {
         required String paymentId,
       }) async {
     final user = FirebaseAuth.instance.currentUser;
+    final loc = AppLocalizations.of(context);
     if (user == null) return;
 
     final ref =
@@ -143,7 +144,7 @@ class PaymentsPage extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Errore: $e")),
+          SnackBar(content: Text("${loc.t('error')}: $e")),
         );
       }
     }
@@ -171,7 +172,7 @@ class PaymentsPage extends StatelessWidget {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text("Errore: ${groupsSnapshot.error}"),
+                child: Text(loc.t('error_generic_with_details', params: {'error': groupsSnapshot.error.toString()},),),
               ),
             );
           }
@@ -191,7 +192,7 @@ class PaymentsPage extends StatelessWidget {
           for (final d in docs) {
             final data = d.data() as Map<String, dynamic>;
             groupIds.add(d.id);
-            groupNames[d.id] = (data['name'] ?? 'Gruppo').toString();
+            groupNames[d.id] = (data['name'] ?? loc.t('group')).toString();
             groupAdmins[d.id] = (data['adminId'] ?? '').toString();
           }
 
@@ -211,7 +212,7 @@ class PaymentsPage extends StatelessWidget {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Text("Errore: ${paySnapshot.error}"),
+                    child: Text(loc.t('error_generic_with_details', params: {'error': paySnapshot.error.toString()},),),
                   ),
                 );
               }
@@ -258,7 +259,7 @@ class PaymentsPage extends StatelessWidget {
 
                   final groupId = (data['groupId'] ?? '').toString();
                   final groupName =
-                  (data['groupName'] ?? groupNames[groupId] ?? 'Gruppo')
+                  (data['groupName'] ?? groupNames[groupId] ?? loc.t('group'))
                       .toString();
 
                   final isAdminOfGroup = groupAdmins[groupId] == user.uid;
@@ -544,7 +545,7 @@ class PaymentsPage extends StatelessWidget {
                               spacing: 6,
                               runSpacing: 6,
                               children: recipients.map((uid) {
-                                final name = recipientNames[uid] ?? 'Utente';
+                                final name = recipientNames[uid] ?? loc.t('user');
                                 final paid = _isPaidForUser(data, uid);
                                 return Container(
                                   padding: const EdgeInsets.symmetric(

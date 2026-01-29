@@ -14,7 +14,7 @@ class GroupPage extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     if (user == null) {
-      return const Center(child: Text("Effettua il login per vedere i gruppi"));
+      return Center(child: Text(loc.t('login_error_group')));
     }
 
     return Scaffold(
@@ -30,7 +30,7 @@ class GroupPage extends StatelessWidget {
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text("Errore: ${snapshot.error}"));
+            return Center(child: Text("${loc.t('error')}: ${snapshot.error}"));
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -75,7 +75,7 @@ class GroupPage extends StatelessWidget {
               final groupDoc = groups[index];
               final groupData = groupDoc.data() as Map<String, dynamic>;
 
-              final groupName = groupData['name'] ?? 'Gruppo';
+              final groupName = groupData['name'] ?? loc.t('group');
               final sport = groupData['sport'] ?? '';
               final inviteCode = groupData['inviteCode'] ?? '???';
               final members = groupData['members'] as List<dynamic>? ?? [];

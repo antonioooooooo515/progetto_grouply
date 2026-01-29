@@ -36,7 +36,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       end: const Offset(0.0, -1.1),
     ).animate(CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeInExpo, // Parte piano, accelera alla fine
+      curve: Curves.easeInExpo,
     ));
 
     _slideDownAnimation = Tween<Offset>(

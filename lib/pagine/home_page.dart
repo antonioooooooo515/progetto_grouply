@@ -103,7 +103,7 @@ class _HomePageState extends State<HomePage>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Errore: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text("${loc.t('error')}: $e"), backgroundColor: Colors.red),
         );
       }
     }
@@ -603,18 +603,19 @@ class _HomePostsContent extends StatelessWidget {
   const _HomePostsContent();
 
   Future<void> _deletePost(BuildContext context, String postId) async {
+    final loc = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Elimina Post"),
-        content: const Text("Vuoi davvero eliminare questo post?"),
+        title: Text(loc.t('post_delete_title')),
+        content: Text(loc.t('confirm_post_delete')),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text("Annulla")),
+              child: Text(loc.t('post_delete_cancel'))),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Elimina", style: TextStyle(color: Colors.red)),
+            child: Text(loc.t('post_delete_delete'), style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -624,7 +625,7 @@ class _HomePostsContent extends StatelessWidget {
       await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
       if (context.mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Post eliminato.")));
+            .showSnackBar(SnackBar(content: Text(loc.t('post_deleted_success'))));
       }
     }
   }
@@ -706,6 +707,7 @@ class _PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final String title = postData['title'] ?? 'Senza titolo';
     final String desc = postData['description'] ?? '';
     final String groupName = postData['groupName'] ?? 'Gruppo';
@@ -753,13 +755,13 @@ class _PostCard extends StatelessWidget {
                       },
                       itemBuilder: (BuildContext context) =>
                       <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(
+                        PopupMenuItem<String>(
                           value: 'delete',
                           child: Row(
                             children: [
                               Icon(Icons.delete, color: Colors.red),
                               SizedBox(width: 8),
-                              Text('Elimina post',
+                              Text(loc.t('post_delete_title'),
                                   style: TextStyle(color: Colors.red)),
                             ],
                           ),
@@ -978,7 +980,7 @@ class _PollCard extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Errore: $e")),
+          SnackBar(content: Text("${loc.t('error')}: $e")),
         );
       }
     }
@@ -1267,7 +1269,7 @@ class _DateHeader extends StatelessWidget {
     } else if (isSameDay(date, tomorrow)) {
       label = loc.t('label_tomorrow');
     } else {
-      label = DateFormat('EEEE d MMMM', localeCode).format(date);
+      label = DateFormat('EEEE dd MMMM', localeCode).format(date);
       label = label[0].toUpperCase() + label.substring(1);
     }
 
@@ -1307,8 +1309,9 @@ class _HomeEventCard extends StatelessWidget {
 
     final matchType = event['matchType'] ?? 'friendly';
     final String? customTitle = event['title'];
+    final loc = AppLocalizations.of(context);
 
-    String title = "Evento";
+    String title = loc.t('generic_event');
     Color lineColor = Colors.green;
 
     if (customTitle != null && customTitle.isNotEmpty) {
@@ -1321,7 +1324,7 @@ class _HomeEventCard extends StatelessWidget {
       title = "${event['homeTeam']} vs ${event['awayTeam']}";
       lineColor = Colors.orange;
     } else if (matchType == 'tournament') {
-      title = "Torneo";
+      title = loc.t('tournament_event');
       lineColor = Colors.amber;
     } else {
       title = "${event['homeTeam'] ?? '?'} vs ${event['awayTeam'] ?? '?'}";

@@ -11,40 +11,37 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Icons
+  #ICONE
   cupertino_icons: ^1.0.8
 
-  # Firebase
+  # FIREBASE
   firebase_core: ^4.2.1
   firebase_auth: ^6.1.2
   cloud_firestore: ^6.1.0
 
-  # Utility
+  #UTILITY
   image_picker: ^1.0.7
   file_picker: ^10.3.7
 
-  # Date
+  #DATA
   intl: ^0.20.2
 
-  # Google
+  #GOOGLE
   google_sign_in: ^7.2.0
-  # Nota: Le dipendenze specifiche (_android, _ios, etc) sono incluse in google_sign_in,
-  # ma se le hai messe per risolvere conflitti lasciale pure.
   google_sign_in_android: ^7.2.7
   google_sign_in_ios: ^6.2.4
   google_sign_in_web: ^1.1.0
   google_sign_in_platform_interface: ^3.1.0
   google_identity_services_web: ^0.3.3+1
 
-  # Map & Location
+  #MAPPA
   flutter_map: ^8.2.2
   latlong2: ^0.9.0
   http: ^1.2.0
 
-  # Messaggistica
+  #NOTIFICHE
   firebase_messaging: ^16.1.0
   flutter_local_notifications: ^19.5.0
-
 
   flutter_localizations:
     sdk: flutter
@@ -55,7 +52,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
 
-  # 👇 AGGIUNTO PER LA SPLASH SCREEN
+  #SPLASH SCREEN
   flutter_native_splash: ^2.3.10
 
 flutter:
@@ -77,7 +74,7 @@ flutter:
         - asset: lib/assets/fonts/Poppins-Bold.ttf
           weight: 700
 
-# CONFIGURAZIONE SPLASH SCREEN
+#CONFIGURAZIONE SPLASH SCREEN
 flutter_native_splash:
   color: "#E91E63"
   image: lib/assets/logo/logo_nobg.png

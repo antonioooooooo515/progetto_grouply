@@ -22,23 +22,36 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
   final TextEditingController _sportController = TextEditingController();
   final TextEditingController _roleController = TextEditingController();
 
-  String? _selectedMonth;
-  String? _selectedGender;
+  String? _selectedMonth; // "01".."12"
+  String? _selectedGender; // "male"|"female"|"other"
 
   String? _profileImageBase64;
 
-  bool _isLoading = true;            // carica dati iniziali
-  bool _isSaving = false;            // sta salvando il profilo
-  bool _isUploadingImage = false;    // sta caricando la foto
+  bool _isLoading = true;
+  bool _isSaving = false;
+  bool _isUploadingImage = false;
 
-  final List<String> _months = const [
-    'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-    'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
+  final List<String> _monthKeys = const [
+    '01', '02', '03', '04', '05', '06',
+    '07', '08', '09', '10', '11', '12',
   ];
 
-  final List<String> _genders = const [
-    'Maschio', 'Femmina', 'Altro',
+  final List<String> _genderKeys = const [
+    'male', 'female', 'other',
   ];
+
+  String _monthLabel(AppLocalizations loc, String key) => loc.t('month_$key');
+
+  String _genderLabel(AppLocalizations loc, String key) {
+    switch (key) {
+      case 'male':
+        return loc.t('gender_male');
+      case 'female':
+        return loc.t('gender_female');
+      default:
+        return loc.t('gender_other');
+    }
+  }
 
   @override
   void initState() {
@@ -78,13 +91,13 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         _yearController.text =
         data['birthYear'] != null ? data['birthYear'].toString() : '';
 
-        String? savedMonth = data['birthMonth'] as String?;
-        if (_months.contains(savedMonth)) {
+        final String? savedMonth = data['birthMonth'] as String?;
+        if (savedMonth != null && _monthKeys.contains(savedMonth)) {
           _selectedMonth = savedMonth;
         }
 
-        String? savedGender = data['gender'] as String?;
-        if (_genders.contains(savedGender)) {
+        final String? savedGender = data['gender'] as String?;
+        if (savedGender != null && _genderKeys.contains(savedGender)) {
           _selectedGender = savedGender;
         }
 
@@ -151,7 +164,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
       if ((bytes.lengthInBytes / 1024) > 700) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Immagine troppo pesante per Firestore. Riprova.")),
+          SnackBar(content: Text(loc.t('image_size_error_settings'))),
         );
         return;
       }
@@ -217,7 +230,8 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
         'gender': _selectedGender,
         'sport': _sportController.text.trim(),
         'role': _roleController.text.trim(),
-        if (_profileImageBase64 != null) 'profileImageBase64': _profileImageBase64,
+        if (_profileImageBase64 != null)
+          'profileImageBase64': _profileImageBase64,
         'email': user.email,
         'updatedAt': FieldValue.serverTimestamp(),
       };
@@ -235,7 +249,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text("${loc.t('error')}: $e")),
         );
       }
     } finally {
@@ -332,7 +346,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
               ),
             ),
           ),
-
           const SizedBox(height: 30),
 
           // Nome
@@ -359,11 +372,12 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                   value: _selectedMonth,
                   decoration: _roundedInputDecoration(loc.t('label_month')),
                   borderRadius: BorderRadius.circular(20),
-                  items: _months
+
+                  items: _monthKeys
                       .map(
-                        (m) => DropdownMenuItem(
-                      value: m,
-                      child: Text(m),
+                        (k) => DropdownMenuItem(
+                      value: k,
+                      child: Text(_monthLabel(loc, k)),
                     ),
                   )
                       .toList(),
@@ -394,11 +408,12 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 value: _selectedGender,
                 decoration: _roundedInputDecoration(loc.t('label_gender')),
                 borderRadius: BorderRadius.circular(20),
-                items: _genders
+
+                items: _genderKeys
                     .map(
-                      (g) => DropdownMenuItem(
-                    value: g,
-                    child: Text(g),
+                      (k) => DropdownMenuItem(
+                    value: k,
+                    child: Text(_genderLabel(loc, k)),
                   ),
                 )
                     .toList(),

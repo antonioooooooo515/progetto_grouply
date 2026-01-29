@@ -121,7 +121,7 @@ class _CreatePollPageState extends State<CreatePollPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Errore: $e")),
+        SnackBar(content: Text("${loc.t('error')}: $e")),
       );
     } finally {
       if (mounted) setState(() => _loading = false);

@@ -50,7 +50,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    loc.t('settings_language_select_title'),
+                    loc.t('settings_language_app'),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -222,7 +222,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     child: ListTile(
                       leading: const Icon(Icons.person_outline),
-                      title: Text(user?.email ?? 'Nessun utente'),
+                      title: Text(user?.email ?? loc.t('no_user')),
                       subtitle: Text(loc.t('settings_account_email_subtitle')),
                     ),
                   ),

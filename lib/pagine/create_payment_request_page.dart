@@ -134,11 +134,9 @@ class _CreatePaymentRequestPageState extends State<CreatePaymentRequestPage> {
 
         'dueDate': _dueDate == null ? null : Timestamp.fromDate(_dueDate!),
 
-        // destinatari
         'recipients': recipients,
         'recipientNames': widget.recipients,
 
-        // stato
         'statusByUser': statusByUser,
 
         'isActive': true,
@@ -154,7 +152,7 @@ class _CreatePaymentRequestPageState extends State<CreatePaymentRequestPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Errore: $e")),
+        SnackBar(content: Text("${loc.t('error')}: $e")),
       );
     } finally {
       if (mounted) setState(() => _loading = false);

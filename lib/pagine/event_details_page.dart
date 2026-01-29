@@ -37,6 +37,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
   Future<void> _updateStatus(String status) async {
     final user = FirebaseAuth.instance.currentUser;
+    final loc = AppLocalizations.of(context);
     if (user == null) return;
 
     setState(() {
@@ -51,7 +52,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       }, SetOptions(merge: true));
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Errore: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${loc.t('error')}: $e")));
       }
     }
   }
@@ -66,7 +67,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.t('button_cancel'))),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("Elimina", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(loc.t('button_delete'), style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
         ],
       ),
     );
@@ -87,7 +88,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       stream: FirebaseFirestore.instance.collection('events').doc(widget.eventId).snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-        if (!snapshot.data!.exists) return Scaffold(appBar: AppBar(), body: const Center(child: Text("Evento non trovato")));
+        if (!snapshot.data!.exists) return Scaffold(appBar: AppBar(), body: Center(child: Text(loc.t('event_not_found'))));
 
         final eventData = snapshot.data!.data() as Map<String, dynamic>;
 
@@ -107,7 +108,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         final String meetingPoint = eventData['meetingPoint'] ?? '-';
 
         final String? customTitle = eventData['title'];
-        String title = "Evento";
+        String title = loc.t('generic_event');
         IconData headerIcon = Icons.event;
         Color headerColor = colors.primary;
 
@@ -124,7 +125,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           headerIcon = Icons.directions_bus;
           headerColor = Colors.orange;
         } else if (matchType == 'tournament') {
-          title = "Torneo";
+          title = loc.t('tournament');
           headerIcon = Icons.emoji_events;
           headerColor = Colors.amber;
         } else {
@@ -181,7 +182,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 ),
                 const SizedBox(height: 32),
 
-                _buildDetailRow(context, Icons.location_on, loc.t('label_location'), location), // 👈 Usa label generica
+                _buildDetailRow(context, Icons.location_on, loc.t('label_location'), location),
 
                 if (meetingPoint != '-' && meetingPoint.isNotEmpty) ...[
                   const SizedBox(height: 16),

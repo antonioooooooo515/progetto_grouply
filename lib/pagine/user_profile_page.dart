@@ -57,11 +57,11 @@ class UserProfilePage extends StatelessWidget {
           }
 
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text("Profilo non trovato"));
+            return Center(child: Text(loc.t('profile_not_found')));
           }
 
           final data = snapshot.data!.data() as Map<String, dynamic>;
-          final String name = data['displayName'] ?? 'Senza nome';
+          final String name = data['displayName'] ?? loc.t('without_name');
           final String role = data['role'] ?? '-';
           final String sport = data['sport'] ?? '-'; // Se vuoto mette "-"
           final String? profileImageBase64 = data['profileImageBase64'];
@@ -125,7 +125,7 @@ class UserProfilePage extends StatelessWidget {
                 _buildInfoCard(
                     context,
                     Icons.cake,
-                    "Data di nascita",
+                    loc.t('birth_date'),
                     birthDate
                 ),
               ],

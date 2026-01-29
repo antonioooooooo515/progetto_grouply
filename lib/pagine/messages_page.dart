@@ -31,7 +31,7 @@ class MessagesPage extends StatelessWidget {
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text("${loc.t('chat_error_generic')}: ${snapshot.error}"));
+            return Center(child: Text("${loc.t('error')}: ${snapshot.error}"));
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -76,7 +76,7 @@ class MessagesPage extends StatelessWidget {
               final groupDoc = groups[index];
               final groupData = groupDoc.data() as Map<String, dynamic>;
 
-              final groupName = groupData['name'] ?? 'Gruppo';
+              final groupName = groupData['name'] ?? loc.t('group');
               final sport = groupData['sport'] ?? '';
               final members = groupData['members'] as List<dynamic>? ?? [];
               final memberCount = members.length;

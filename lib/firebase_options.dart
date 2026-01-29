@@ -13,7 +13,7 @@ class DefaultFirebaseOptions {
         return ios;
       default:
         throw UnsupportedError(
-          'La piattaforma corrente non è configurata in firebase_options.dart',
+          'La piattaforma corrente non è configurata',
         );
     }
   }

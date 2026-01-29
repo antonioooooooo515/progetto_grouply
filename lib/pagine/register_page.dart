@@ -130,14 +130,14 @@ class _RegisterPageState extends State<RegisterPage> {
         Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
       });
     } on FirebaseAuthException catch (e) {
-      String msg = 'Errore durante la registrazione con Google';
+      String msg = loc.t('error_google_register');
 
       if (e.code == 'account-exists-with-different-credential') {
-        msg = 'Esiste già un account con un altro metodo di accesso.';
+        msg = loc.t('error_account_exists_different_credential');
       } else if (e.code == 'invalid-credential') {
-        msg = 'Credenziale Google non valida.';
+        msg = loc.t('error_invalid_google_credential');
       } else if (e.code == 'user-disabled') {
-        msg = 'Questo account è stato disabilitato.';
+        msg = loc.t('error_user_disabled');
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -145,7 +145,7 @@ class _RegisterPageState extends State<RegisterPage> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Errore Google registrazione: $e')),
+        SnackBar(content: Text("${loc.t('error_register')}: $e")),
       );
     } finally {
       if (mounted) {
@@ -294,7 +294,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             const SizedBox(height: 20),
                             SoftInput(
                               controller: _confirmController,
-                              label: loc.t('confirm_password_label'),
+                              label: loc.t('confirm_password'),
                               icon: Icons.lock_outline,
                               obscureText: _isObscured,
                               validator: (value) {
@@ -376,7 +376,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           label: Text(
                             _isGoogleLoading
-                                ? 'Registrazione con Google...'
+                                ? loc.t('register_with_google_loading')
                                 : loc.t('register_with_google'),
                             style: const TextStyle(
                               fontSize: 15,

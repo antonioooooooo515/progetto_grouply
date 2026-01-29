@@ -55,7 +55,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   //ICONA DINAMICA
   IconData _getSportIcon() {
     final s = widget.groupSport.toLowerCase();
-    if (s.contains('pallavolo') || s.contains('volley')) return Icons.sports_volleyball;
+    if (s.contains('pallavolo') || s.contains('volleyball')) return Icons.sports_volleyball;
     if (s.contains('basket') || s.contains('pallacanestro')) return Icons.sports_basketball;
     if (s.contains('tennis')) return Icons.sports_tennis;
     if (s.contains('rugby')) return Icons.sports_rugby;
@@ -73,6 +73,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   }
 
   void _removeTournamentTeam(int index) {
+    final loc = AppLocalizations.of(context);
     if (_tournamentTeamsControllers.length > 2) {
       setState(() {
         _tournamentTeamsControllers[index].dispose();
@@ -80,7 +81,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Un torneo deve avere almeno 2 squadre!")),
+        SnackBar(content: Text(loc.t('tournament_min_3'))),
       );
     }
   }
@@ -208,7 +209,10 @@ class _CreateEventPageState extends State<CreateEventPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Errore: $e"), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text("${loc.t('error')}: $e"),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -351,7 +355,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
                       decoration: InputDecoration(
                         labelText: loc.t('label_meeting_time'),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        // 🔥 ORA L'ICONA È ACCESS_TIME
                         prefixIcon: const Icon(Icons.access_time),
                       ),
                       child: Text(

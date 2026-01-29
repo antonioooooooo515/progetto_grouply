@@ -32,7 +32,7 @@ class MemberListPage extends StatelessWidget {
         }
 
         if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
-          return const Center(child: Text("Impossibile caricare i membri"));
+          return Center(child: Text(loc.t('members_error')));
         }
 
         final groupData = snapshot.data!.data() as Map<String, dynamic>;
@@ -40,7 +40,7 @@ class MemberListPage extends StatelessWidget {
         final String adminId = groupData['adminId'] ?? '';
 
         if (membersList.isEmpty) {
-          return const Center(child: Text("Nessun membro nel gruppo"));
+          return Center(child: Text(loc.t('no_members')));
         }
 
         return ListView.builder(
@@ -95,18 +95,18 @@ class _MemberTile extends StatelessWidget {
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
       builder: (context, snapshot) {
-        String displayName = "Caricamento...";
+        String displayName = loc.t('loading');
         String role = "";
         String? profileImageBase64;
 
         if (snapshot.hasData && snapshot.data!.exists) {
           final userData = snapshot.data!.data() as Map<String, dynamic>;
-          displayName = userData['displayName'] ?? "Utente sconosciuto";
+          displayName = userData['displayName'] ?? loc.t('unknown_user');
           role = userData['role'] ?? "";
           profileImageBase64 = userData['profileImageBase64'];
         }
 
-        if (isMe) displayName += " (Tu)";
+        if (isMe) displayName += loc.t('you');
 
         ImageProvider? imageProvider;
         if (profileImageBase64 != null) {
@@ -127,7 +127,7 @@ class _MemberTile extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => UserProfilePage(
                     userId: userId,
-                    userName: displayName.replaceAll(" (Tu)", ""),
+                    userName: displayName.replaceAll(loc.t('you'), ""),
                   ),
                 ),
               );

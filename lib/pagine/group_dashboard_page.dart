@@ -125,7 +125,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
         .snapshots()
         .listen((snap) async {
       if (!_eventsPrimed) {
-        _eventsPrimed = true; // ignora primo caricamento
+        _eventsPrimed = true;
         return;
       }
 
@@ -235,12 +235,13 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
     final user = FirebaseAuth.instance.currentUser;
     final currentUserId = user?.uid ?? '';
     final isAdmin = currentUserId == widget.adminId;
+    final loc = AppLocalizations.of(context);
 
     if (!isAdmin) {
       HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Solo l'amministratore può eliminare elementi."),
+        SnackBar(
+          content: Text(loc.t('admin_only_delete')),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 2),
         ),
@@ -290,10 +291,10 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
     if (type == null) return;
 
     final String title =
-    type == 'event' ? loc.t('delete_event_title') : "Elimina post";
+    type == 'event' ? loc.t('delete_event_title') : loc.t('delete_post_title');
     final String content = type == 'event'
         ? loc.t('delete_event_confirm')
-        : "Vuoi eliminare i $count elementi selezionati?";
+        : loc.t('delete_post_confirm', params: {'count': count.toString()});
 
     final confirm = await showDialog<bool>(
       context: context,
@@ -306,7 +307,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
               child: Text(loc.t('button_cancel'))),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Elimina",
+            child: Text(loc.t('button_delete'),
                 style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
         ],
@@ -327,7 +328,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("$count elementi eliminati")),
+        SnackBar(content: Text(loc.t('elements_deleted', params: {'count': count.toString()}))),
       );
       _cancelSelection();
     }
@@ -509,7 +510,7 @@ class _GroupDashboardPageState extends State<GroupDashboardPage>
         backgroundColor: colors.surfaceVariant,
         leading: IconButton(
             icon: const Icon(Icons.close), onPressed: _cancelSelection),
-        title: Text("${_selectedIds.length} selezionati"),
+        title: Text(loc.t('items_selected', params: {'count': _selectedIds.length.toString()})),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),
@@ -626,7 +627,7 @@ class _GroupBoardContent extends StatelessWidget {
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return Text("Errore eventi: ${snapshot.error}");
+                return Text("${loc.t('error')}: ${snapshot.error}");
               }
               if (!snapshot.hasData) {
                 return const Center(child: LinearProgressIndicator());
@@ -790,15 +791,16 @@ class _EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final type = event['matchType'] ?? 'friendly';
-    final location = event['location'] ?? 'Posizione non specificata';
+    final location = event['location'] ?? loc.t('location_not_specified');
     final timestamp = event['startDateTime'] as Timestamp?;
     final DateTime? date = timestamp?.toDate();
     final String? customTitle = event['title'];
 
     IconData iconData;
     Color iconColor;
-    String title = "Evento";
+    String title = loc.t('generic_event');
 
     if (customTitle != null && customTitle.isNotEmpty) {
       iconData = Icons.fitness_center;
@@ -815,12 +817,12 @@ class _EventCard extends StatelessWidget {
     } else if (type == 'tournament') {
       iconData = Icons.emoji_events;
       iconColor = Colors.amber;
-      title = "Torneo";
+      title = loc.t('tournament');
     } else {
       iconData = _getSportIcon(groupSport);
       iconColor = Colors.green;
       title =
-      "${event['homeTeam'] ?? 'Squadra'} vs ${event['awayTeam'] ?? 'Squadra'}";
+      "${event['homeTeam'] ?? loc.t('team_generic')} vs ${event['awayTeam'] ?? loc.t('team_generic')}";
     }
 
     String dateStr = "--/--";
@@ -949,8 +951,9 @@ class _SelectablePostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
-    final String title = postData['title'] ?? 'Senza titolo';
+    final String title = postData['title'] ?? loc.t('without_title');
     final String desc = postData['description'] ?? '';
     final Timestamp? ts = postData['createdAt'];
     final String dateStr =
@@ -1163,7 +1166,7 @@ class _GroupInfoContent extends StatelessWidget {
                         .doc(adminId)
                         .get(),
                     builder: (context, snapshot) {
-                      if (!snapshot.hasData) return const Text("Caricamento...");
+                      if (!snapshot.hasData) return Text(loc.t('loading'));
                       final userData =
                       snapshot.data!.data() as Map<String, dynamic>?;
                       final name = userData?['displayName'] ?? "Admin";
