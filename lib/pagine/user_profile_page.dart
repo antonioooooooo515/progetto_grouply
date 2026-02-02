@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 import '../localization/app_localizations.dart';
 
@@ -67,8 +68,21 @@ class UserProfilePage extends StatelessWidget {
           final String? profileImageBase64 = data['profileImageBase64'];
 
           String birthDate = "-";
-          if (data['birthDay'] != null && data['birthMonth'] != null && data['birthYear'] != null) {
-            birthDate = "${data['birthDay']} ${data['birthMonth']} ${data['birthYear']}";
+
+          final bd = data['birthDay'];
+          final bm = data['birthMonth']; // "01".."12"
+          final by = data['birthYear'];
+
+          final int? day = bd is int ? bd : int.tryParse(bd?.toString() ?? '');
+          final int? month = bm is int ? bm : int.tryParse(bm?.toString() ?? '');
+          final int? year = by is int ? by : int.tryParse(by?.toString() ?? '');
+
+          if (day != null && month != null && year != null) {
+            final date = DateTime(year, month, day);
+
+            final localeTag = loc.locale.toLanguageTag();
+
+            birthDate = DateFormat('d MMMM y', localeTag).format(date);
           }
 
           ImageProvider? imageProvider;

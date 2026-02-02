@@ -13,7 +13,6 @@ class AppLocalizations {
     //ITALIANO
     'it': {
       //LOGIN PAGE & REGISTER PAGE
-      'push_init_failed': 'Inizializzazione notifiche non riuscita',
       'error_login': 'Errore durante il login',
       'error_user_not_found': 'Utente non trovato',
       'error_wrong_password': 'Password errata',
@@ -39,7 +38,7 @@ class AppLocalizations {
       'error_unexpected_reset': 'Errore imprevisto durante il reset della password',
       'login_button': 'Accedi',
       'login_with_google_loading': 'Accesso con Google...',
-      'login_with_google': 'Registrati con Google',
+      'login_with_google': 'Accedi con Google',
       'no_account': 'Non hai un account?',
       'go_to_register': 'Registrati',
 
@@ -222,6 +221,9 @@ class AppLocalizations {
       'dialog_leave_title': 'Vuoi uscire dal gruppo?',
       'dialog_leave_content': 'Non vedrai più questo gruppo nella tua lista',
       'info_leave_group': 'Esci dal gruppo',
+      'group_delete_confirm': 'Gruppo eliminato correttamente',
+      'admin_delete_group': "Sei l'admin: uscendo verrà eliminato il gruppo per tutti gli utenti (eventi, post, sondaggi, richieste di pagamento e chat). Vuoi continuare?",
+      'info_delete_group': 'Elimina gruppo',
       'leave_success': 'Sei uscito dal gruppo correttamente.',
       'leave_error': 'Errore durante l\'uscita: {error}',
       'items_selected': '{count} selezionati',
@@ -350,7 +352,6 @@ class AppLocalizations {
     //INGLESE
     'en': {
       // LOGIN PAGE & REGISTER PAGE
-      'push_init_failed': 'Notification initialization failed',
       'error_login': 'Error during login',
       'error_user_not_found': 'User not found',
       'error_wrong_password': 'Incorrect password',
@@ -376,7 +377,7 @@ class AppLocalizations {
       'error_unexpected_reset': 'Unexpected error during password reset',
       'login_button': 'Sign in',
       'login_with_google_loading': 'Signing in with Google...',
-      'login_with_google': 'Sign up with Google',
+      'login_with_google': 'Sign in with Google',
       'no_account': 'Don’t have an account?',
       'go_to_register': 'Sign up',
 
@@ -559,6 +560,9 @@ class AppLocalizations {
       'dialog_leave_title': 'Do you want to leave the group?',
       'dialog_leave_content': 'You will no longer see this group in your list',
       'info_leave_group': 'Leave group',
+      'group_delete_confirm': 'Group deleted successfully',
+      'admin_delete_group': "You are the admin: leaving will delete the group for all users (events, posts, polls, payment requests, and chat). Do you want to continue?",
+      'info_delete_group': 'Delete group',
       'leave_success': 'You have successfully left the group.',
       'leave_error': 'Error while leaving: {error}',
       'items_selected': '{count} selected',
@@ -687,7 +691,6 @@ class AppLocalizations {
     //SPAGNOLO
     'es': {
       // LOGIN PAGE & REGISTER PAGE
-      'push_init_failed': 'Error al inicializar las notificaciones',
       'error_login': 'Error durante el inicio de sesión',
       'error_user_not_found': 'Usuario no encontrado',
       'error_wrong_password': 'Contraseña incorrecta',
@@ -713,7 +716,7 @@ class AppLocalizations {
       'error_unexpected_reset': 'Error inesperado al restablecer la contraseña',
       'login_button': 'Iniciar sesión',
       'login_with_google_loading': 'Iniciando sesión con Google...',
-      'login_with_google': 'Regístrate con Google',
+      'login_with_google': 'Iniciar sesión con Google',
       'no_account': '¿No tienes una cuenta?',
       'go_to_register': 'Regístrate',
 
@@ -896,6 +899,9 @@ class AppLocalizations {
       'dialog_leave_title': '¿Deseas salir del grupo?',
       'dialog_leave_content': 'Ya no verás este grupo en tu lista',
       'info_leave_group': 'Salir del grupo',
+      'group_delete_confirm': 'Grupo eliminado correctamente',
+      'info_delete_group': 'Eliminar grupo',
+      'admin_delete_group': "Eres el administrador: al salir se eliminará el grupo para todos los usuarios (eventos, publicaciones, encuestas, solicitudes de pago y chat). ¿Deseas continuar?",
       'leave_success': 'Has salido del grupo correctamente.',
       'leave_error': 'Error al salir: {error}',
       'items_selected': '{count} seleccionados',
@@ -1024,7 +1030,6 @@ class AppLocalizations {
     //FRANCESE
     'fr': {
       // LOGIN PAGE & REGISTER PAGE
-      'push_init_failed': 'Échec de l’initialisation des notifications',
       'error_login': 'Erreur lors de la connexion',
       'error_user_not_found': 'Utilisateur introuvable',
       'error_wrong_password': 'Mot de passe incorrect',
@@ -1050,7 +1055,7 @@ class AppLocalizations {
       'error_unexpected_reset': 'Erreur inattendue lors de la réinitialisation',
       'login_button': 'Se connecter',
       'login_with_google_loading': 'Connexion avec Google...',
-      'login_with_google': 'S’inscrire avec Google',
+      'login_with_google': 'Se connecter avec Google',
       'no_account': 'Vous n’avez pas de compte ?',
       'go_to_register': 'S’inscrire',
 
@@ -1233,6 +1238,9 @@ class AppLocalizations {
       'dialog_leave_title': 'Voulez-vous quitter le groupe ?',
       'dialog_leave_content': 'Vous ne verrez plus ce groupe dans votre liste',
       'info_leave_group': 'Quitter le groupe',
+      'group_delete_confirm': 'Groupe supprimé avec succès',
+      'info_delete_group': 'Supprimer le groupe',
+      'admin_delete_group': "Vous êtes l’administrateur : en quittant le groupe, celui-ci sera supprimé pour tous les utilisateurs (événements, publications, sondages, demandes de paiement et chat). Voulez-vous continuer ?",
       'leave_success': 'Vous avez quitté le groupe avec succès.',
       'leave_error': 'Erreur lors de la sortie : {error}',
       'items_selected': '{count} sélectionnés',
@@ -1361,7 +1369,6 @@ class AppLocalizations {
     //TEDESCO
     'de': {
       // LOGIN PAGE & REGISTER PAGE
-      'push_init_failed': 'Initialisierung der Benachrichtigungen fehlgeschlagen',
       'error_login': 'Fehler beim Anmelden',
       'error_user_not_found': 'Benutzer nicht gefunden',
       'error_wrong_password': 'Falsches Passwort',
@@ -1387,7 +1394,7 @@ class AppLocalizations {
       'error_unexpected_reset': 'Unerwarteter Fehler beim Zurücksetzen',
       'login_button': 'Anmelden',
       'login_with_google_loading': 'Anmeldung mit Google...',
-      'login_with_google': 'Mit Google registrieren',
+      'login_with_google': 'Mit Google anmelden',
       'no_account': 'Noch kein Konto?',
       'go_to_register': 'Registrieren',
 
@@ -1570,6 +1577,9 @@ class AppLocalizations {
       'dialog_leave_title': 'Möchtest du die Gruppe verlassen?',
       'dialog_leave_content': 'Diese Gruppe wird nicht mehr in deiner Liste angezeigt',
       'info_leave_group': 'Gruppe verlassen',
+      'group_delete_confirm': 'Gruppe erfolgreich gelöscht',
+      'info_delete_group': 'Gruppe löschen',
+      'admin_delete_group': "Du bist der Administrator: Wenn du die Gruppe verlässt, wird sie für alle Nutzer gelöscht (Events, Beiträge, Umfragen, Zahlungsanfragen und Chat). Möchtest du fortfahren?",
       'leave_success': 'Du hast die Gruppe erfolgreich verlassen.',
       'leave_error': 'Fehler beim Verlassen: {error}',
       'items_selected': '{count} ausgewählt',
@@ -1698,7 +1708,6 @@ class AppLocalizations {
     //PORTOGHESE
     'pt': {
       // LOGIN PAGE & REGISTER PAGE
-      'push_init_failed': 'Falha na inicialização das notificações',
       'error_login': 'Erro durante o login',
       'error_user_not_found': 'Usuário não encontrado',
       'error_wrong_password': 'Senha incorreta',
@@ -1724,7 +1733,7 @@ class AppLocalizations {
       'error_unexpected_reset': 'Erro inesperado ao redefinir a senha',
       'login_button': 'Entrar',
       'login_with_google_loading': 'Entrando com Google...',
-      'login_with_google': 'Cadastrar com Google',
+      'login_with_google': 'Iniciar sessão com o Google',
       'no_account': 'Não tem uma conta?',
       'go_to_register': 'Cadastre-se',
 
@@ -1907,6 +1916,9 @@ class AppLocalizations {
       'dialog_leave_title': 'Deseja sair do grupo?',
       'dialog_leave_content': 'Você não verá mais este grupo na sua lista',
       'info_leave_group': 'Sair do grupo',
+      'group_delete_confirm': 'Grupo excluído com sucesso',
+      'info_delete_group': 'Excluir grupo',
+      'admin_delete_group': "Você é o administrador: ao sair, o grupo será excluído para todos os usuários (eventos, posts, enquetes, solicitações de pagamento e chat). Deseja continuar?",
       'leave_success': 'Você saiu do grupo com sucesso.',
       'leave_error': 'Erro ao sair: {error}',
       'items_selected': '{count} selecionados',

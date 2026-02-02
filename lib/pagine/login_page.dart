@@ -10,8 +10,6 @@ import '../widgets/soft_input.dart';
 import '../widgets/big_button.dart';
 import '../widgets/tiny_text_button.dart';
 
-import '../services/push_notification_service.dart';
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -37,21 +35,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _afterAuthSuccess() async {
-    final loc = AppLocalizations.of(context);
-
-    try {
-      await PushNotificationsService.instance.init();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("${loc.t('push_init_failed')}: $e"),
-            duration: const Duration(seconds: 6),
-          ),
-        );
-      }
-    }
-
     if (!mounted) return;
     Navigator.pushReplacementNamed(context, '/home');
   }
