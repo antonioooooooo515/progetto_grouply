@@ -37,7 +37,6 @@ class UserProfilePage extends StatelessWidget {
     } else if (s.contains('calcio') || s.contains('soccer') || s.contains('football')) {
       return Icons.sports_soccer;
     }
-
     return Icons.sports_score;
   }
 
